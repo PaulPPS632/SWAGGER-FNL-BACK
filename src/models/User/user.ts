@@ -15,6 +15,7 @@ import { UserEstresSession } from "../Clasificacion/userestressession";
 import { UserResponses } from "./user_responses";
 import { Empresas } from "../Global/empresas";
 import { Role } from "../User/role"; 
+import { StudentsResponses } from "./studentsresponses";
 
 @Table({
   timestamps: false,
@@ -59,6 +60,11 @@ export class User extends Model {
   @AllowNull(false)
   @Default(false)
   @Column(DataType.BOOLEAN)
+  studentresponsebool!: boolean;
+
+  @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
   testestresbool!: boolean;
 
   @AllowNull(true)
@@ -71,6 +77,9 @@ export class User extends Model {
 
   @HasOne(() => UserResponses)
   userresponses!: UserResponses;
+
+  @HasOne(() => StudentsResponses)
+  studentresponses!: StudentsResponses;
 
   @ForeignKey(() => Empresas)
   @AllowNull(true)

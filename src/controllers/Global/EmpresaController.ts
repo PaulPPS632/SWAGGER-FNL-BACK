@@ -32,7 +32,7 @@ class EmpresaController{
                 where: {
                     empresa_id: empresaId,
                     role_id: 1, // Excluir Administradores
-                    id: { [Op.notIn]: [1] } // Excluir Fancy
+                    id: { [Op.notIn]: [1]} // Excluir Fancy
                 },
                 include: [{
                     model: UserResponses,
@@ -41,11 +41,13 @@ class EmpresaController{
                         model: Sedes,
                         required: false,
                         where: { empresa_id: empresaId }
-                    }]
+                    }],
                 }],
                 raw: true,
                 nest: true
             });
+
+            
 
             // Process the results to get the distribution
             const distribution: { [key: string]: number } = {};
