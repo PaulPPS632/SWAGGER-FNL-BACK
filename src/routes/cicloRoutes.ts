@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { obtenerCiclos, obtenerCicloPorId, crearCiclo, actualizarCiclo, eliminarCiclo } from "../controllers/ciclo/cicloController";
-
+//
 const router = Router();
 // @ts-ignore
 router.get("/", obtenerCiclos);

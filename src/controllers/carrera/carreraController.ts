@@ -66,6 +66,6 @@ export const eliminarCarrera = async (req: Request, res: Response): Promise<Resp
             return res.status(404).json({ error: 'Carrera no encontrada' });
         }
     } catch (error) {
-        return res.status(500).json({ error: 'Error al eliminar la carrera' });
+        return res.status(500).json({ error: 'Error al eliminar  carrera' });
     }
 };

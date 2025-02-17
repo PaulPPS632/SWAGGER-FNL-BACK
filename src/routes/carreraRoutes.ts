@@ -2,7 +2,6 @@ import { Router } from 'express';
 import * as carreraController from '../controllers/carrera/carreraController';
 
 const router = Router();
-
 // @ts-ignore
 router.get('/', carreraController.obtenerCarreras);
 // @ts-ignore

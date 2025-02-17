@@ -65,6 +65,6 @@ export const eliminarCiclo = async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Ciclo no encontrado" });
         }
     } catch (error) {
-        return res.status(500).json({ error: "Error al eliminar el ciclo" });
+        return res.status(500).json({ error: "Error al eliminar  ciclo" });
     }
 };
