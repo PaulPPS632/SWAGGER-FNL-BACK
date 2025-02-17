@@ -2,6 +2,8 @@ import { AgeRange } from "../../models/User/ageRange";
 import { Area } from "../../models/User/area";
 import { Gender } from "../../models/User/gender";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
+import { MetodoEstudio } from "../../models/User/metodoestudio";
+import { Modalidad } from "../../models/User/modalidad";
 import { ResponsabilityLevel } from "../../models/User/responsabilityLevel";
 import { Sedes } from "../../models/User/sedes";
 import { User } from "../../models/User/user";
@@ -118,6 +120,24 @@ class MaintanceController {
       res.json({ results: genders });
     } catch (error) {
       res.status(500).json({ error: "Error al obtener géneros" });
+    }
+  }
+  
+  async Modalidad(_req: any, res: any){
+    try {
+      const modalidad = await Modalidad.findAll(); // Consulta la base de datos para obtener los géneros
+      res.json({ results: modalidad });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener la modalidad" });
+    }
+  }
+
+  async metodoestudio(_req: any, res: any){
+    try {
+      const metodoestudio = await MetodoEstudio.findAll(); // Consulta la base de datos para obtener los géneros
+      res.json({ results: metodoestudio });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener los metodos de estudio" });
     }
   }
 }
