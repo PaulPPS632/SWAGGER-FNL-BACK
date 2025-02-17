@@ -21,6 +21,9 @@ import { Area } from "./User/area";
 import { Sedes } from "./User/sedes";
 import { EstresContador } from "./Clasificacion/estres_contador";
 import { EmocionesDiarias } from "./User/emocionesDiarias";
+import {StudentsResponses} from "./User/studentsresponses";
+import { Carrera } from "./User/carrera";
+import { Ciclo } from "./User/ciclo";
 
 const models = [
   User,
@@ -45,5 +48,8 @@ const models = [
   Sedes,
   EstresContador,
   EmocionesDiarias,
+  StudentsResponses,
+  Carrera,
+  Ciclo,
 ];
 export default models;
