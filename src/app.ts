@@ -22,6 +22,10 @@ import EmocionesDiariasRoutes from "./routes/emocionesDiarias.routes";
 import SpeechTextRoutes from "./routes/speechtext.routes";
 import carreraRoutes from "./routes/carreraRoutes";
 import cicloRoutes from "./routes/cicloRoutes";
+// @ts-ignore
+import PredictionRoutes from "./routes/predictionRoutes";
+// @ts-ignore
+import RfRoutes from "./routes/rf.routes";
 
 class App {
   private server: Application;
@@ -67,6 +71,9 @@ class App {
     this.server.use("/api/voice", SpeechTextRoutes);
     this.server.use("/api/carrera", carreraRoutes);
     this.server.use("/api/ciclo", cicloRoutes);
+    this.server.use("/api", PredictionRoutes);
+    this.server.use("/api/randomforest", RfRoutes);
+
   }
 
   public getServer(): Application {
