@@ -142,10 +142,9 @@ class UserEstresSessionController{
         const result = await UserEstresSession.findAll({
           attributes: [
             [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'DISGUSTADO'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'INFELIZ'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 ELSE NULL END`)), 'NEUTRAL'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 ELSE NULL END`)), 'FELIZ']
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 ELSE NULL END`)), 'INFELIZ'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 ELSE NULL END`)), 'FELIZ'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'NEUTRAL']
           ],
           include: [{
             model: User,
