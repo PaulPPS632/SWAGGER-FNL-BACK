@@ -64,6 +64,7 @@ class UserController {
         nombre_empresa: user.empresa.nombre
       });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: "Error interno del servidor" });
     }
   }

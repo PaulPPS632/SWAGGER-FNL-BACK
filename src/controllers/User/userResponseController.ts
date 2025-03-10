@@ -34,6 +34,36 @@ class UserResponseController {
       res.status(500).json({ error: "Error interno del servidor." });
     }
   }
+
+  async saveStudentResponse(req: any, res: any) {
+    const {
+      user_id,
+      age_range_id,
+      carrera_id,
+      gender_id,
+      created_at,
+    } = req.body;
+
+    try {
+      const userResponse = await UserResponses.create({
+        user_id,
+        age_range_id,
+        carrera_id,
+        gender_id,
+        created_at,
+      });
+
+      res
+        .status(201)
+        .json({
+          message: "Respuesta guardada exitosamente.",
+          data: userResponse,
+        });
+    } catch (error) {
+      console.error("Error al guardar la respuesta del usuario:", error);
+      res.status(500).json({ error: "Error interno del servidor." });
+    }
+  }
   async getAllUserResponses(_req: any, res: any) {
     try {
       const responses = await UserResponses.findAll();
