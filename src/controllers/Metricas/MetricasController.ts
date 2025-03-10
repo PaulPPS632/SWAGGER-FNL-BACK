@@ -420,19 +420,13 @@ class MetricasController {
         return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
       }
 
-      const todayLima = moment().tz("America/Lima").startOf("day");
-
-      const startOfDayUTC = todayLima.clone().tz("UTC").format("YYYY-MM-DD HH:mm:ss");
-      const endOfDayUTC = todayLima.clone().tz("UTC").endOf("day").format("YYYY-MM-DD HH:mm:ss");
-
-      console.log(`Buscando actividades entre ${startOfDayUTC} y ${endOfDayUTC}`);
 
   
       // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
       const usuariosCompletaronHoy = await UserPrograma.findAll({
         where: {
           completed_date: {
-            [Op.between]: [startOfDayUTC, endOfDayUTC], // 🔴 Fechas convertidas a UTC
+            [Op.ne]: null, // Not Null
           },
         },
         attributes: ["user_id"],
