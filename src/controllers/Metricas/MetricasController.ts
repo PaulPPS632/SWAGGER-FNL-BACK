@@ -420,9 +420,7 @@ class MetricasController {
         return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
       }
 
-
-  
-      // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
+      
       const usuariosCompletaronHoy = await UserPrograma.findAll({
         where: {
           completed_date: {
