@@ -61,7 +61,8 @@ class UserController {
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
         id_empresa: user.empresa_id,
-        nombre_empresa: user.empresa.nombre
+        nombre_empresa: user.empresa.nombre,
+        activo: user.activo
       });
     } catch (error) {
       console.log(error)
@@ -74,6 +75,7 @@ class UserController {
     const { username, password, email, empresa_id, role_id } = req.body;
     const file = req.file;
 
+    const activo = true;
     
     try {
       if (!username || !password || !email || !role_id) {
@@ -111,6 +113,7 @@ class UserController {
         created_at: new Date(),
         empresa_id,
         role_id,
+        activo,
       });
 
       res
@@ -227,6 +230,7 @@ class UserController {
       permisopoliticas,
       funcyinteract,
       userresponsebool,
+      studentresponsebool,
       testestresbool,
       role_id,
     } = req.body;
@@ -248,6 +252,11 @@ class UserController {
       if (userresponsebool !== undefined) {
         user.userresponsebool =
           userresponsebool === true || userresponsebool === "true";
+      }
+
+      if (studentresponsebool !== undefined) {
+        user.studentresponsebool =
+        studentresponsebool === true || studentresponsebool === "true";
       }
 
       if (testestresbool !== undefined) {
