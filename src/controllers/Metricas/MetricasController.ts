@@ -4,7 +4,7 @@
 import { User } from "../../models/User/user";
 //import database from "../../config/database";
 import { Message } from "../../models/ChatBot/message";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { Empresas } from "../../models/Global/empresas";
 import { EstresContador } from "../../models/Clasificacion/estres_contador";
@@ -420,19 +420,14 @@ class MetricasController {
         return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
       }
 
-      const todayLima = moment().tz("America/Lima").startOf("day");
-
-      const startOfDayUTC = todayLima.clone().tz("UTC").format("YYYY-MM-DD HH:mm:ss");
-      const endOfDayUTC = todayLima.clone().tz("UTC").endOf("day").format("YYYY-MM-DD HH:mm:ss");
-
-      console.log(`Buscando actividades entre ${startOfDayUTC} y ${endOfDayUTC}`);
-
-  
-      // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
-      const usuariosCompletaronHoy = await UserPrograma.findAll({
+      
+      const usuariosCompletaron = await UserPrograma.findAll({
         where: {
           completed_date: {
-            [Op.between]: [startOfDayUTC, endOfDayUTC], // 🔴 Fechas convertidas a UTC
+            [Op.ne]: null, // Not Null
+          },
+          dia: {
+            [Op.between]: [1, 21], // Filtrar solo días entre 1 y 21
           },
         },
         attributes: ["user_id"],
@@ -441,16 +436,16 @@ class MetricasController {
           {
             model: User,
             required: true,
-            where: { 
-              empresa_id: empresa_id, 
-              
+            where: {
+              empresa_id: empresa_id, // Filtrar por empresa
             },
           },
         ],
+        having: Sequelize.literal('COUNT(DISTINCT dia) = 21'), // Asegura que haya completado en todos los días del 1 al 21
       });
 
 
-      const totalUsuariosCompletaronHoy = usuariosCompletaronHoy.length;
+      const totalUsuariosCompletaronHoy = usuariosCompletaron.length;
       const totalUsuarios = users.length;
       const usuariosNoCompletaronHoy = totalUsuarios - totalUsuariosCompletaronHoy;
 

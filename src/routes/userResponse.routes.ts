@@ -26,6 +26,29 @@ const UserResponseRoutes = Router();
  */
 UserResponseRoutes.post('/guardarUserResponses', UserResponseController.saveUserResponse); // Ruta para guardar respuestas de usuarios
 
+// Definir las rutas para user_responses
+/**
+ * Post track
+ * @openapi
+ * /guardarUserResponses:
+ *    post:
+ *      tags:
+ *        - Student Responses
+ *      summary: "Registrar student responses"
+ *      description: Este endpoint es para Registrar el usuario responses
+ *      requestBody:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: "#/components/schemas/studentResponse"
+ *      responses:
+ *        '200':
+ *          description: Retorna confirmacion y datos almacenados
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserResponseRoutes.post('/guardarStudentResponses', UserResponseController.saveStudentResponse); // Ruta para guardar respuestas de usuarios
+
 /**
  * Post track
  * @openapi

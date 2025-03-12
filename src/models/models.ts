@@ -26,6 +26,7 @@ import { MetodoEstudio } from "./User/metodoestudio";
 import { StudentsResponses } from "./User/studentsresponses";
 import { Carrera } from "./User/carrera";
 import { Ciclo } from "./User/ciclo";
+import { Monedas } from "./Global/monedas";
 
 const models = [
   User,
@@ -54,6 +55,7 @@ const models = [
   MetodoEstudio,
   StudentsResponses,
   Carrera,
-  Ciclo
+  Ciclo,
+  Monedas
 ];
 export default models;

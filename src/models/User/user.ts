@@ -96,4 +96,10 @@ export class User extends Model {
 
   @BelongsTo(() => Role) 
   role!: Role;
+
+  @AllowNull(true)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  activo!: boolean;
+
 }

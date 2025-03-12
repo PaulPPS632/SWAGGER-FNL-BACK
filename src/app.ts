@@ -20,12 +20,13 @@ import EmpresaRouter from "./routes/empresa.routes";
 import role_router from "./routes/user.roles";
 import EmocionesDiariasRoutes from "./routes/emocionesDiarias.routes";
 import SpeechTextRoutes from "./routes/speechtext.routes";
-import carreraRoutes from "./routes/carreraRoutes";
-import cicloRoutes from "./routes/cicloRoutes";
+import carreraRoutes from "./routes/carrera.routes";
+import cicloRoutes from "./routes/ciclo.routes";
 // @ts-ignore
-import PredictionRoutes from "./routes/predictionRoutes";
+import PredictionRoutes from "./routes/prediction.routes";
 // @ts-ignore
 import RfRoutes from "./routes/rf.routes";
+import MonedasRouter from "./routes/monedas.routes";
 
 class App {
   private server: Application;
@@ -74,6 +75,7 @@ class App {
     this.server.use("/api/ciclo", cicloRoutes);
     this.server.use("/api", PredictionRoutes);
     this.server.use("/api/randomforest", RfRoutes);
+
   }
 
   public getServer(): Application {
