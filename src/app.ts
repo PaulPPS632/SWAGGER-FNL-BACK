@@ -75,7 +75,7 @@ class App {
     this.server.use("/api/ciclo", cicloRoutes);
     this.server.use("/api", PredictionRoutes);
     this.server.use("/api/randomforest", RfRoutes);
-
+    this.server.use("/api/", MonedasRouter);
   }
 
   public getServer(): Application {
