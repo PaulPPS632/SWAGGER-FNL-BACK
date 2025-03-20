@@ -3,11 +3,16 @@ import { Carrera } from '../../models/User/carrera';
 // @ts-ignore
 export const obtenerCarreras = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const carreras = await Carrera.findAll();
+        const empresa_id = req.params.empresa_id;
+        const carreras = await Carrera.findAll({
+            where:{
+                empresa_id: empresa_id
+            }
+        });
         if (carreras.length === 0) {
             return res.status(404).json({ mensaje: 'No hay carreras registradas' });
         }
-        return res.status(200).json(carreras);
+        return res.status(200).json({results: carreras});
     } catch (error) {
         return res.status(500).json({ error: 'Error al obtener las carreras' });
     }
@@ -15,7 +20,13 @@ export const obtenerCarreras = async (req: Request, res: Response): Promise<Resp
 
 export const obtenerCarreraPorId = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const carrera = await Carrera.findByPk(req.params.id);
+        const empresa_id = req.params.empresa_id;
+        const carrera = await Carrera.findOne({
+            where:{
+                empresa_id: empresa_id,
+                id: req.params.id
+            }
+        });
         if (!carrera) {
             return res.status(404).json({ error: 'Carrera no encontrada' });
         }

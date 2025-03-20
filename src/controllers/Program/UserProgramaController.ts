@@ -12,6 +12,9 @@ import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { Tags } from "../../models/Program/Tags";
 import { Op } from "sequelize";
 import { Activitys } from "../../models/Program/Activitys";
+import { StudentsResponses } from "../../models/User/studentsresponses";
+import { Carrera } from "../../models/User/carrera";
+import { Ciclo } from "../../models/User/ciclo";
 
 class UserProgramaController {
   respuestaMap: Record<string, string>;
@@ -289,6 +292,125 @@ class UserProgramaController {
       res.status(500).json({ error: "Error interno del servidor." });
     }
   };
+
+  asignacionActivityStudents = async (req: any, res: any) => {
+    const { user_id } = req.params; // Obtener el user_id de los parámetros de la URL
+    try {
+      const user = await User.findOne({
+        where: { id: user_id },
+        attributes: ["username", "email"],
+        include: [
+          {
+            model: StudentsResponses,
+            include: [
+              {
+                model: AgeRange,
+              },
+              {
+                model: Carrera,
+              },
+              {
+                model: Ciclo,
+              },
+              {
+                model: Gender,
+              },
+            ],
+          },
+          {
+            model: UserEstresSession,
+            include: [
+              {
+                model: EstresNiveles,
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          error: "No se encontraron los datos requeridos del usuario.",
+        });
+      }
+      const estres_nivel =
+        user?.userestressessions.estres_nivel.nombre ?? "Desconocido";
+      const age_range =
+        user?.studentresponses.age_range.age_range ?? "Desconocido";
+      const carrera =
+        user?.studentresponses.carrera.carrera ?? "Desconocido";
+      const ciclo =
+        user?.studentresponses.ciclo.ciclo ?? "Desconocido";
+      const gender = user?.studentresponses.gender.gender || "Desconocido";
+
+      const tags = [
+        {
+          tipo: "Nivel de Estres",
+          nombre: estres_nivel,
+        },
+        {
+          tipo: "Rango de Edad",
+          nombre: age_range,
+        },
+        {
+          tipo: "Genero",
+          nombre: gender,
+        },
+        {
+          tipo: "Carrera",
+          nombre: carrera,
+        },
+        {
+          tipo: "Ciclo",
+          nombre: ciclo,
+        },
+      ];
+      const conditions = tags.map((tag: { nombre: string; tipo: string }) => ({
+        nombre: tag.nombre,
+        tipo: tag.tipo,
+      }));
+      const tagsDB = await Tags.findAll({
+        where: {
+          [Op.or]: conditions,
+        },
+        attributes: ["id", "nombre", "tipo"],
+      });
+      const userTagIds = tagsDB.map((tag) => tag.id);
+      const activities = await Activitys.findAll({
+        include: {
+          model: Tags,
+          where: { id: { [Op.in]: userTagIds } },
+        },
+      });
+
+      const matchedActivities = activities.map((activity) => {
+        const matchScore = activity.tags.filter((tag) =>
+          tagsDB.some((userTag) => userTag.id === tag.id)
+        ).length;
+        return { activity, matchScore };
+      });
+      matchedActivities.sort((a, b) => b.matchScore - a.matchScore);
+      const selectedActivities = matchedActivities
+        .slice(0, 21)
+        .map((item) => item.activity);
+      // Crear los registros para la tabla UserPrograma
+      const userProgramRecords = selectedActivities.map((activity, index) => ({
+        user_id: user_id,
+        activity_id: activity.id,
+        dia: index + 1, // Día del 1 al 21
+        start_date: index + 1 === 1 ? new Date() : null,
+      }));
+
+      // Registrar las actividades en UserPrograma
+      await UserPrograma.bulkCreate(userProgramRecords);
+      return res.status(200).json({ seleccionados: selectedActivities });
+    } catch (error) {
+      console.error("Error al asignar los programas del usuario:", error);
+      res.status(500).json({ error: "Error interno del servidor." });
+    }
+  };
+
+
   generar = async (req: any, res: any) => {
     const { tags, cant } = req.body;
     try {

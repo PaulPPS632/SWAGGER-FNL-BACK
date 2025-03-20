@@ -27,6 +27,7 @@ import PredictionRoutes from "./routes/prediction.routes";
 // @ts-ignore
 import RfRoutes from "./routes/rf.routes";
 import MonedasRouter from "./routes/monedas.routes";
+import StudentResponseRoutes from "./routes/studentResponse.routes";
 
 class App {
   private server: Application;
@@ -75,7 +76,7 @@ class App {
     this.server.use("/api", PredictionRoutes);
     this.server.use("/api/randomforest", RfRoutes);
     this.server.use("/api/", MonedasRouter);
-
+    this.server.use("/api/", StudentResponseRoutes);
   }
 
   public getServer(): Application {

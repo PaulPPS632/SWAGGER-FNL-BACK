@@ -1,25 +1,22 @@
-import { UserResponses } from "../../models/User/user_responses";
+import { StudentsResponses } from "../../models/User/studentsresponses";
 
-class UserResponseController {
-  async saveUserResponse(req: any, res: any) {
+
+class StudentResponseController {
+  async saveStudentResponse(req: any, res: any) {
     const {
       user_id,
       age_range_id,
-      hierarchical_level_id,
-      responsability_level_id,
+      ciclo_id,
       gender_id,
-      sedes_id,
       created_at,
     } = req.body;
 
     try {
-      const userResponse = await UserResponses.create({
+      const userResponse = await StudentsResponses.create({
         user_id,
         age_range_id,
-        hierarchical_level_id,
-        responsability_level_id,
+        ciclo_id,
         gender_id,
-        sedes_id,
         created_at,
       });
 
@@ -34,23 +31,12 @@ class UserResponseController {
       res.status(500).json({ error: "Error interno del servidor." });
     }
   }
-
-
-  async getAllUserResponses(_req: any, res: any) {
-    try {
-      const responses = await UserResponses.findAll();
-      res.status(200).json(responses);
-    } catch (error) {
-      console.error("Error al obtener las respuestas de usuarios:", error);
-      res.status(500).json({ error: "Error interno del servidor." });
-    }
-  }
-
-  async getUserResponsesByUserId(req: any, res: any) {
+  
+  async getStudentResponsesByUserId(req: any, res: any) {
     const { user_id } = req.params; // O puedes usar req.query si viene desde la URL
 
     try {
-      const responses = await UserResponses.findAll({
+      const responses = await StudentsResponses.findAll({
         where: { user_id: user_id }, // Filtrar por user_id
       });
 
@@ -68,4 +54,4 @@ class UserResponseController {
   }
 }
 
-export default new UserResponseController();
+export default new StudentResponseController();

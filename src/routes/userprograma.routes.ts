@@ -168,6 +168,29 @@ UserProgramaRouter.get('/user/:user_id', userprogramacontroller.getByUserId);
  */
 UserProgramaRouter.post('/report/:user_id', userprogramacontroller.asignacionActivitys);
 
+
+/**
+ * Post track
+ * @openapi
+ * /userprograma/report/{user_id}:
+ *    post:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Reporte de un Usuario"
+ *      description: Este endpoint es para generar un reporte epecifico de un usuario
+ *      parameters: 
+ *        - name: user_id
+ *          in: path
+ *          description: ID de la tecnica
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna mensaje de confirmacion y lista de programas.
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserProgramaRouter.post('/report/students/:user_id', userprogramacontroller.asignacionActivityStudents);
+
 /**
  * Post track
  * @openapi
