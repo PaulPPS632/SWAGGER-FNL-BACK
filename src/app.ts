@@ -13,8 +13,8 @@ import TestEstresRoutes from "./routes/testEstres.routes";
 import EstresNivelesRoutes from "./routes/estresNiveles.routes";
 import UserEstresSesionRoutes from "./routes/userestressesion.routes";
 import UserProgramaRouter from "./routes/userprograma.routes";
-// import TipoTecnicasRoutes from "./routes/tipotecnicas.routes";
 import TestEstresSalidaRoutes from "./routes/testEstresSalida.routes";
+import TestEstresEstudiantesRoutes from "./routes/test_estres_estudiantes"; 
 import MetricasRouter from "./routes/metricas.routes";
 import EmpresaRouter from "./routes/empresa.routes";
 import role_router from "./routes/user.roles";
@@ -26,7 +26,6 @@ import cicloRoutes from "./routes/ciclo.routes";
 import PredictionRoutes from "./routes/prediction.routes";
 // @ts-ignore
 import RfRoutes from "./routes/rf.routes";
-import MonedasRouter from "./routes/monedas.routes";
 import StudentResponseRoutes from "./routes/studentResponse.routes";
 
 class App {
@@ -40,16 +39,16 @@ class App {
 
   private middlewares(): void {
     this.server.use(
-        cors({
-          origin: "*",
-          methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-          optionsSuccessStatus: 204,
-        })
+      cors({
+        origin: "*",
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        optionsSuccessStatus: 204,
+      })
     );
     this.server.use(bodyParser.json());
     this.server.use(
-        "/imagenes",
-        express.static(path.join(__dirname, "imagenes"))
+      "/imagenes",
+      express.static(path.join(__dirname, "imagenes"))
     );
     this.server.use("/documentation", swaggerUi.serve, swaggerUi.setup(swaggerSetup));
   }
@@ -58,14 +57,15 @@ class App {
     // Configuración de rutas
     this.server.use("/api", UserRoutes);
     this.server.use("/api/v1/maintance", MaintanceRoutes);
-    this.server.use("/api", TestEstresRoutes);
+    this.server.use("/api", TestEstresRoutes);  // Ruta para test de estrés general
     this.server.use("/api", MessagesRoutes);
     this.server.use("/api", OpenaiRoutes);
     this.server.use("/api", EstresNivelesRoutes);
     this.server.use("/api", UserEstresSesionRoutes);
     this.server.use("/api", UserResponseRoutes);
     this.server.use("/api/userprograma", UserProgramaRouter);
-    this.server.use("/api", TestEstresSalidaRoutes);
+    this.server.use("/api", TestEstresSalidaRoutes);  // Ruta para salida de test de estrés
+    this.server.use("/api", TestEstresEstudiantesRoutes);  // Ruta para test de estrés estudiantes
     this.server.use("/api/metricas", MetricasRouter);
     this.server.use("/api/empresa", EmpresaRouter);
     this.server.use("/api", role_router);
@@ -75,8 +75,9 @@ class App {
     this.server.use("/api/ciclo", cicloRoutes);
     this.server.use("/api", PredictionRoutes);
     this.server.use("/api/randomforest", RfRoutes);
-    this.server.use("/api/", MonedasRouter);
     this.server.use("/api/", StudentResponseRoutes);
+
+
   }
 
   public getServer(): Application {
