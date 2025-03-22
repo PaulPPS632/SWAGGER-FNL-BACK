@@ -77,7 +77,6 @@ class App {
     this.server.use("/api/randomforest", RfRoutes);
     this.server.use("/api/", StudentResponseRoutes);
 
-
   }
 
   public getServer(): Application {
