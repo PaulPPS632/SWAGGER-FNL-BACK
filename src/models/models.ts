@@ -21,12 +21,13 @@ import { Area } from "./User/area";
 import { Sedes } from "./User/sedes";
 import { EstresContador } from "./Clasificacion/estres_contador";
 import { EmocionesDiarias } from "./User/emocionesDiarias";
-import { Modalidad } from "./User/modalidad";
-import { MetodoEstudio } from "./User/metodoestudio";
 import { StudentsResponses } from "./User/studentsresponses";
 import { Carrera } from "./User/carrera";
 import { Ciclo } from "./User/ciclo";
 import { Monedas } from "./Global/monedas";
+import { ActivityStudents } from "./Program/ActivityStudents";
+import { ActivityStudentTags } from "./Program/ActivityStudentTags";
+import { StudentPrograma } from "./Program/studentprograma";
 
 const models = [
   User,
@@ -51,11 +52,12 @@ const models = [
   Sedes,
   EstresContador,
   EmocionesDiarias,
-  Modalidad,
-  MetodoEstudio,
   StudentsResponses,
   Carrera,
   Ciclo,
-  Monedas
+  Monedas,
+  ActivityStudents,
+  ActivityStudentTags,
+  StudentPrograma,
 ];
 export default models;

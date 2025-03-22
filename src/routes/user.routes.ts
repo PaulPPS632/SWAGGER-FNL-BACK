@@ -131,6 +131,23 @@ UserRoutes.get('/perfilUsuario/:id', UserController.getUserProfile);
 /**
  * Post track
  * @openapi
+ * /perfilUsuario/{userId}:
+ *    get:
+ *      tags:
+ *        - Users
+ *      summary: "Perfil del estudiante"
+ *      description: Este endpoint es para obtener los datos para el Perfil 
+ *      responses:
+ *        '200':
+ *          description: Retorna los Datos del Perfil
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserRoutes.get('/perfilStudent/:id', UserController.getStudentProfile);
+
+/**
+ * Post track
+ * @openapi
  * /actualizarPerfil/{userId}:
  *    post:
  *      tags:
@@ -175,5 +192,8 @@ UserRoutes.get('/users/empresa', Authorization,UserController.listCompanyUsers);
 UserRoutes.get('/users/empresa/estres/sedes', Authorization,UserController.listEstresporSede);
 
 UserRoutes.get('/users/getpermisos/:user_id', UserController.getPermisos);
+
+
+UserRoutes.get('/students/getpermisos/:user_id', UserController.getPermisoStudent);
 
 export default UserRoutes;

@@ -7,7 +7,7 @@ export const obtenerCiclos = async (req: Request, res: Response) => {
         if (ciclos.length === 0) {
             return res.status(404).json({ mensaje: "No hay ciclos registrados" });
         }
-        return res.status(200).json(ciclos);
+        return res.status(200).json({results: ciclos});
     } catch (error) {
         return res.status(500).json({ error: "Error al obtener los ciclos" });
     }

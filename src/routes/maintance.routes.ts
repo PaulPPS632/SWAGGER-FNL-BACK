@@ -19,6 +19,9 @@ const MaintanceRoutes = Router();
  */
 MaintanceRoutes.get("/range-age", MaintanceController.RangeAge);
 
+
+MaintanceRoutes.get("/range-age2", MaintanceController.RangeAge2);
+
 /**
  * Post track
  * @openapi
@@ -122,42 +125,6 @@ MaintanceRoutes.get("/responsability-level", MaintanceController.Responsability)
  *          description: Error de validacion.
  */
 MaintanceRoutes.get("/gender", MaintanceController.Gender);
-
-
-/**
- * Post track
- * @openapi
- * /gender:
- *    get:
- *      tags:
- *        - Maintance
- *      summary: "Ruta para obtener la modalidad de estudios"
- *      description: Este endpoint es para obtener la modalidad de estudios
- *      responses:
- *        '200':
- *          description: Retorna todos los géneros
- *        '422':
- *          description: Error de validacion.
- */
-MaintanceRoutes.get("/modalidad", MaintanceController.Modalidad);
-
-
-/**
- * Post track
- * @openapi
- * /gender:
- *    get:
- *      tags:
- *        - Maintance
- *      summary: "Ruta para obtener los metodos de estudio"
- *      description: Este endpoint es para obtener los metodos de estudio
- *      responses:
- *        '200':
- *          description: Retorna todos los géneros
- *        '422':
- *          description: Error de validacion.
- */
-MaintanceRoutes.get("/metodo-estudio", MaintanceController.metodoestudio);
 
 
 export default MaintanceRoutes;

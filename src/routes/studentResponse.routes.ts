@@ -1,13 +1,13 @@
 import { Router } from "express";
-import UserResponseController from "../controllers/User/userResponseController";
+import StudentResponseController from "../controllers/User/studentResponseController";
 
-const UserResponseRoutes = Router();
+const StudentResponseRoutes = Router();
 
 // Definir las rutas para user_responses
 /**
  * Post track
  * @openapi
- * /guardarUserResponses:
+ * /guardarStudentResponses:
  *    post:
  *      tags:
  *        - User Responses
@@ -24,27 +24,7 @@ const UserResponseRoutes = Router();
  *        '422':
  *          description: Error de validacion.
  */
-UserResponseRoutes.post('/guardarUserResponses', UserResponseController.saveUserResponse); // Ruta para guardar respuestas de usuarios
-
-
-/**
- * Post track
- * @openapi
- * /userResponses:
- *    get:
- *      tags:
- *        - User Responses
- *      summary: "Lista todos los user responses"
- *      description: Este endpoint es para listar todos los user responses
- *      responses:
- *        '200':
- *          description: Retorna confirmacion y datos almacenados
- *        '422':
- *          description: Error de validacion.
- *        '500':
- *          description: Error interno del servidor
- */
-UserResponseRoutes.get('/userResponses', UserResponseController.getAllUserResponses); // Ruta para obtener todas las respuestas de usuarios
+StudentResponseRoutes.post('/guardarStudentResponses', StudentResponseController.saveStudentResponse); // Ruta para guardar respuestas de usuarios
 
 /**
  * Post track
@@ -70,6 +50,7 @@ UserResponseRoutes.get('/userResponses', UserResponseController.getAllUserRespon
  *        '500':
  *          description: Error interno del servidor
  */
-UserResponseRoutes.get('/userResponses/:user_id', UserResponseController.getUserResponsesByUserId); 
+StudentResponseRoutes.get('/studentResponses/:user_id', StudentResponseController.getStudentResponsesByUserId); 
 
-export default UserResponseRoutes;
+
+export default StudentResponseRoutes;

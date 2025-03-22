@@ -52,6 +52,11 @@ UserProgramaRouter.get(
     '/:user_id/actividad/:dia',
     userprogramacontroller.getStartDateByActivity.bind(userprogramacontroller)
   );
+
+UserProgramaRouter.get(
+    '/:user_id/actividad/student/:dia',
+    userprogramacontroller.getStartDateByActivityStudents.bind(userprogramacontroller)
+  );
   
 /**
  * Post track
@@ -168,6 +173,29 @@ UserProgramaRouter.get('/user/:user_id', userprogramacontroller.getByUserId);
  */
 UserProgramaRouter.post('/report/:user_id', userprogramacontroller.asignacionActivitys);
 
+
+/**
+ * Post track
+ * @openapi
+ * /userprograma/report/{user_id}:
+ *    post:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Reporte de un Usuario"
+ *      description: Este endpoint es para generar un reporte epecifico de un usuario
+ *      parameters: 
+ *        - name: user_id
+ *          in: path
+ *          description: ID de la tecnica
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna mensaje de confirmacion y lista de programas.
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserProgramaRouter.post('/report/students/:user_id', userprogramacontroller.asignacionActivityStudents);
+
 /**
  * Post track
  * @openapi
@@ -189,6 +217,29 @@ UserProgramaRouter.post('/report/:user_id', userprogramacontroller.asignacionAct
  *          description: Error de validacion.
  */
 UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.getByUserIdAndOrderByDia);
+
+
+/**
+ * Post track
+ * @openapi
+ * /userprograma/getprogramcompleto/{user_id}:
+ *    post:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Lista de UserPrograma de un Usuario"
+ *      description: Este endpoint es para listar los registros de UserPrograma filtrados por Usuario y ordenados por dia
+ *      parameters: 
+ *        - name: user_id
+ *          in: path
+ *          description: ID del usuario
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna lista de User Programa.
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserProgramaRouter.post('/getprogramcompleto/students/:user_id', userprogramacontroller.getByStudentIdAndOrderByDia);
 
 /**
  * Post track
@@ -228,7 +279,13 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.g
  */
 UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
+UserProgramaRouter.put('/student/:user_id/:id', userprogramacontroller.updateByStudentAndTecnica);
+
+
 UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
+
+
+UserProgramaRouter.post('/generateActivityStudents', userprogramacontroller.generarEstudiantes);
 
 /**
  * Post track

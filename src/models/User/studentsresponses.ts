@@ -12,7 +12,7 @@ import {
 import { User } from "./user";
 import { AgeRange } from "./ageRange";
 import { Gender } from "./gender";
-import { Carrera } from "./carrera";
+import { Ciclo } from "./ciclo";
 
 @Table({
   timestamps: false,
@@ -36,13 +36,14 @@ export class StudentsResponses extends Model {
   @BelongsTo(() => AgeRange)
   age_range!: AgeRange;
 
-  @ForeignKey(() => Carrera)
+
+  @ForeignKey(() => Ciclo)
   @AllowNull(false)
   @Column(DataType.INTEGER)
-  carrera_id!: number;
+  ciclo_id!: number;
 
-  @BelongsTo(() => Carrera)
-  carrera!: Carrera;
+  @BelongsTo(() => Ciclo)
+  ciclo!: Ciclo;
 
   @ForeignKey(() => Gender)
   @AllowNull(false)
@@ -51,7 +52,6 @@ export class StudentsResponses extends Model {
 
   @BelongsTo(() => Gender)
   gender!: Gender;
-  
   
 
   @CreatedAt

@@ -20,6 +20,8 @@ import { Area } from "../../models/User/area";
 import { Sedes } from "../../models/User/sedes";
 
 import { Op } from "sequelize";
+import { Ciclo } from "../../models/User/ciclo";
+import { StudentsResponses } from "../../models/User/studentsresponses";
 
 
 class UserController {
@@ -58,7 +60,7 @@ class UserController {
         email: user.email,
         role: user.role.name,
         permisopoliticas: user.permisopoliticas,
-        userresponsebool: user.userresponsebool,
+        studentresponsebool: user.studentresponsebool,
         testestresbool: user.testestresbool,
         id_empresa: user.empresa_id,
         nombre_empresa: user.empresa.nombre,
@@ -166,6 +168,62 @@ class UserController {
         username: userProfile.user?.username || "Sin nombre",
         email: userProfile.user?.email || "Sin email",
         hierarchicalLevel: userProfile.hierarchical_level?.level || "No especificado",
+        age_range: userProfile.age_range?.age_range || "No especificado",
+        gender: userProfile.gender?.gender || "No especificado",
+        profileImage: userProfile.user?.profileImage || null,
+        id_empresa: userProfile.user?.empresa_id || null,
+        role_id: userProfile.user?.role_id || null,
+        nivel_estres: userEstres?.estres_nivel_id || "No completó el test",
+        dias_usados,
+        dias_no_usados,
+      });
+    } catch (error) {
+      console.error("Error al obtener el perfil de usuario:", error);
+      return res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+
+  async getStudentProfile(req: any, res: any) {
+    try {
+      const userProfile = await StudentsResponses.findOne({
+        where: { user_id: req.params.id },
+        include: [
+          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id"] },
+          { model: Ciclo, attributes: ["ciclo"] },
+          { model: AgeRange, attributes: ["age_range"] },
+          { model: Gender, attributes: ["gender"] },
+        ],
+      });
+  
+      if (!userProfile) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+  
+      // Obtener nivel de estrés si existe
+      let userEstres = await UserEstresSession.findOne({
+        where: { user_id: req.params.id },
+        attributes: ["estres_nivel_id"],
+      });
+  
+      // Obtener las fechas de mensajes enviados por el usuario
+      const messageUserDates = await Message.findAll({
+        where: { user_id: req.params.id },
+        attributes: [[Sequelize.fn("DATE", Sequelize.col("created_at")), "unique_date"]],
+        group: [Sequelize.fn("DATE", Sequelize.col("created_at"))],
+        order: [[Sequelize.fn("DATE", Sequelize.col("created_at")), "ASC"]],
+      });
+  
+      // Cálculo de días no usados
+      const now = new Date();
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const dias_usados = messageUserDates.length || 0;
+      const dias_no_usados = endDate.getDate() - dias_usados;
+  
+      // Respuesta JSON con datos seguros
+      return res.json({
+        username: userProfile.user?.username || "Sin nombre",
+        email: userProfile.user?.email || "Sin email",
+        ciclo: userProfile.ciclo?.ciclo || "No especificado",
         age_range: userProfile.age_range?.age_range || "No especificado",
         gender: userProfile.gender?.gender || "No especificado",
         profileImage: userProfile.user?.profileImage || null,
@@ -657,6 +715,39 @@ class UserController {
         permisos: {
           permisopoliticas: user.permisopoliticas,
           userresponsebool: user.userresponsebool,
+          testestresbool: user.testestresbool
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Error al obtener los permisos del usuario:', error);
+      return res.status(500).json({
+        message: 'Error al obtener los permisos',
+        error: error.message
+      });
+    }
+  }
+
+  async getPermisoStudent(req: any, res: any) {
+    try {
+      const { user_id } = req.params;
+
+      const user = await User.findOne({
+        where: {
+          id: user_id
+        },
+        attributes: ['permisopoliticas', 'studentresponsebool', 'testestresbool']
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      // Enviar solo los permisos del usuario
+      res.status(200).json({
+        permisos: {
+          permisopoliticas: user.permisopoliticas,
+          studentresponsebool: user.studentresponsebool,
           testestresbool: user.testestresbool
         }
       });

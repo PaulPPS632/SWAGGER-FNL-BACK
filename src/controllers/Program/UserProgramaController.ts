@@ -12,6 +12,8 @@ import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { Tags } from "../../models/Program/Tags";
 import { Op } from "sequelize";
 import { Activitys } from "../../models/Program/Activitys";
+import { ActivityStudents } from "../../models/Program/ActivityStudents";
+import { StudentPrograma } from "../../models/Program/studentprograma";
 
 class UserProgramaController {
   respuestaMap: Record<string, string>;
@@ -289,6 +291,50 @@ class UserProgramaController {
       res.status(500).json({ error: "Error interno del servidor." });
     }
   };
+
+  asignacionActivityStudents = async (req: any, res: any) => {
+    const { user_id } = req.params;
+  
+    try {
+      // Verifica que el usuario exista
+      const user = await User.findByPk(user_id);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado." });
+      }
+  
+      // Obtiene todas las actividades con sus tags asociados (a través de ActivityStudentTags)
+      const activityStudents = await ActivityStudents.findAll({
+        include: [
+          {
+            model: Tags,
+            through: { attributes: [] }, // asegúrate de que la relación esté bien definida en tus modelos
+          },
+        ],
+      });
+  
+      // Prepara los registros para StudentPrograma
+      const studentProgramaData = activityStudents.map((activity, index) => ({
+        user_id: user.id,
+        activity_id: activity.id,
+        sesion: index + 1, // Sesión del 1 al N
+        start_date: index === 0 ? new Date() : null,
+      }));
+  
+      // Inserta los registros en la tabla studentprograma
+      await StudentPrograma.bulkCreate(studentProgramaData);
+  
+      return res.status(200).json({
+        message: "Actividades asignadas correctamente al estudiante.",
+        actividades_asignadas: activityStudents,
+      });
+  
+    } catch (error) {
+      console.error("Error al asignar actividades a estudiantes:", error);
+      res.status(500).json({ error: "Error interno del servidor." });
+    }
+  };
+
+
   generar = async (req: any, res: any) => {
     const { tags, cant } = req.body;
     try {
@@ -351,6 +397,69 @@ class UserProgramaController {
     }
   };
 
+
+  generarEstudiantes = async (req: any, res: any) => {
+    const { tags, cant } = req.body;
+    try {
+      if (cant > 5)
+        return res
+          .status(500)
+          .json({
+            error: "no puede generar mas de 5 actividades en una consulta",
+          });
+      const conditions = tags.map((tag: { nombre: string; tipo: string }) => ({
+        nombre: tag.nombre,
+        tipo: tag.tipo,
+      }));
+      const existingTags = await Tags.findAll({
+        where: {
+          [Op.or]: conditions,
+        },
+      });
+      const existingTagSet = new Set(
+        existingTags.map((tag) =>
+          JSON.stringify({ nombre: tag.nombre, tipo: tag.tipo })
+        )
+      );
+
+      // Filtrar los nuevos tags que no existen en la base de datos
+      const newTags = tags.filter(
+        (tag: { nombre: string; tipo: string }) =>
+          !existingTagSet.has(
+            JSON.stringify({ nombre: tag.nombre, tipo: tag.tipo })
+          )
+      );
+
+      if (newTags.length > 0) {
+        await Tags.bulkCreate(newTags);
+        const ActualExistingTags = await Tags.findAll({
+          where: {
+            [Op.or]: conditions,
+          },
+          attributes: ["id", "nombre", "tipo"],
+        });
+        const respuesta = await OpenaiController.generateActivityStudents(
+          ActualExistingTags,
+          cant
+        );
+        return res
+          .status(200)
+          .json({ message: "Operación completada" , status: respuesta});
+      } else {
+        const respuesta = await OpenaiController.generateActivityStudents(
+          existingTags,
+          cant
+        );
+        return res
+          .status(200)
+          .json({ message: "Operación completada", status: respuesta });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "error interno del servidor" });
+    }
+  };
+
   async getStartDateByActivity(req: any, res: any) {
     const { user_id, dia } = req.params; // Obtener user_id y activity_id de los parámetros
 
@@ -361,6 +470,35 @@ class UserProgramaController {
         where: {
           user_id: user_id,
           dia: dia,
+        },
+        attributes: ["start_date", "completed_date"],
+      });
+      if (!userPrograma) {
+        return res.status(404).json({ error: "Programa no encontrado para el usuario y actividad especificados." });
+      }
+      // Retornar el start_date
+      res.status(200).json({
+        start_date: userPrograma.start_date,
+        completed_date: userPrograma.completed_date, // Devolver si ya fue completado
+      });
+
+    } catch (error) {
+      console.error("Error al obtener el start_date:", error);
+      res.status(500).json({ error: "Error interno del servidor." });
+    }
+  }
+
+
+  async getStartDateByActivityStudents(req: any, res: any) {
+    const { user_id, dia } = req.params; // Obtener user_id y activity_id de los parámetros
+
+    console.log(user_id, dia)
+    try {
+      // Buscar el registro con el user_id y activity_id
+      const userPrograma = await StudentPrograma.findOne({
+        where: {
+          user_id: user_id,
+          sesion: dia,
         },
         attributes: ["start_date", "completed_date"],
       });
@@ -475,6 +613,82 @@ class UserProgramaController {
     }
   }
 
+
+  async updateByStudentAndTecnica(req: any, res: any) {
+    const { user_id, id } = req.params; // Obtener user_id y ide de los parámetros
+    const { comentario, estrellas, caritas } = req.body; // Obtener los campos que se quieren actualizar del body
+
+    try {
+      // Buscar el registro basado en user_id y
+      const userPrograma = await StudentPrograma.findOne({
+        where: {
+          user_id: user_id,
+          id: id,
+        },
+      });
+
+      const userEstresSession = await UserEstresSession.findOne({
+        where: { user_id: user_id }
+      });
+
+      if (!userPrograma) {
+        return res.status(404).json({ error: "Programa no encontrado" });
+      }
+
+      if (!userEstresSession) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+
+      if (caritas === 3) {
+            userEstresSession.caritas = 1; // Cambiar carita feliz a carita triste
+        } else if (caritas === 1) {
+            userEstresSession.caritas = 3; // Cambiar carita triste a carita feliz
+        } else {
+            userEstresSession.caritas = caritas; // Si no es 1 ni 3, asignar el valor directamente
+        }
+
+      // Actualizar los campos comentario y estrellas si se pasan en el body
+      userPrograma.comentario = comentario || userPrograma.comentario;
+      userPrograma.estrellas = estrellas !== undefined ? estrellas : userPrograma.estrellas;
+
+ 
+      // Guardar los cambios en la base de datos
+      if (userPrograma.completed_date == null)
+        userPrograma.completed_date = new Date();
+
+      //Guardar la fecha de creacion de los datos
+      if (userEstresSession.created_at == null)
+        userEstresSession.created_at = new Date();
+
+      await userEstresSession.save();
+      await userPrograma.save();
+
+      const nextProgram = await UserPrograma.findOne({
+        where: {
+          user_id: user_id,
+          dia: userPrograma.sesion + 1,
+        },
+      });
+
+      if (nextProgram) {
+        nextProgram.start_date = addDays(new Date(), 7);
+        await nextProgram.save();
+      }
+
+      res.status(200).json({
+        message: "Programa actualizado con éxito",
+        userPrograma,
+      });
+    } catch (error) {
+      console.error("Error al actualizar el programa de usuario:", error);
+      res
+        .status(500)
+        .json({ error: "Error al actualizar el programa de usuario" });
+    }
+  }
+  
+
   // Obtener todos los registros de UserPrograma filtrados por user_id y ordenados por 'dia'
   async getByUserIdAndOrderByDia(req: any, res: any) {
     const { user_id } = req.params;
@@ -499,6 +713,48 @@ class UserProgramaController {
         id: programa.id,
             user_id: programa.user_id,
             dia: programa.dia,
+            nombre_tecnica:programa.activity.nombre_tecnica,
+            tipo_tecnica: programa.activity.tipo_tecnica,
+            descripcion:programa.activity.descripcion,
+            guia: programa.activity.guia,
+            comentario: programa.comentario,
+            estrellas: programa.estrellas,
+            start_date: programa.start_date,
+            completed_date: programa.completed_date,
+            url_img: programa.activity.imagen_url
+      }));
+      res.status(200).json({ userProgramas:respuesta }); // Responder con los datos de ambas tablas
+    } catch (error: any) {
+      console.error("Error al obtener los programas de usuario:", error);
+      res.status(500).json({
+        error: `Error al obtener los programas de usuario: ${error.message}`,
+      });
+    }
+  }
+
+  async getByStudentIdAndOrderByDia(req: any, res: any) {
+    const { user_id } = req.params;
+    try {
+      // Obtener los programas del usuario
+      const userProgramas = await StudentPrograma.findAll({
+        where: { user_id },
+        include: [
+          {
+            model: ActivityStudents
+          }
+        ],
+        order: [["sesion", "ASC"]],
+      });
+
+      if (userProgramas.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No se encontraron programas para este usuario" });
+      }
+      const respuesta = userProgramas.map((programa) => ({
+        id: programa.id,
+            user_id: programa.user_id,
+            dia: programa.sesion,
             nombre_tecnica:programa.activity.nombre_tecnica,
             tipo_tecnica: programa.activity.tipo_tecnica,
             descripcion:programa.activity.descripcion,
