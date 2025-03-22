@@ -15,6 +15,23 @@ class MaintanceController {
       res.status(500).json({ error: "Error al obtener rango de edades" });
     }
   }
+
+  async RangeAge2(_req: any, res: any) {
+    try {
+      const ageRanges = [
+        { id: 1, rango: "17 - 19" },
+        { id: 2, rango: "20 - 22" },
+        { id: 3, rango: "23 o más" },
+      ];
+  
+      res.json({ results: ageRanges });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener rango de edades" });
+    }
+  }
+  
+
+
   async Areas(req: any, res:any){
     try{
       const user_id = req.params.userid;

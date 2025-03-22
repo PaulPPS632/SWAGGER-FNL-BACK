@@ -52,6 +52,11 @@ UserProgramaRouter.get(
     '/:user_id/actividad/:dia',
     userprogramacontroller.getStartDateByActivity.bind(userprogramacontroller)
   );
+
+UserProgramaRouter.get(
+    '/:user_id/actividad/student/:dia',
+    userprogramacontroller.getStartDateByActivityStudents.bind(userprogramacontroller)
+  );
   
 /**
  * Post track
@@ -213,6 +218,29 @@ UserProgramaRouter.post('/report/students/:user_id', userprogramacontroller.asig
  */
 UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.getByUserIdAndOrderByDia);
 
+
+/**
+ * Post track
+ * @openapi
+ * /userprograma/getprogramcompleto/{user_id}:
+ *    post:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Lista de UserPrograma de un Usuario"
+ *      description: Este endpoint es para listar los registros de UserPrograma filtrados por Usuario y ordenados por dia
+ *      parameters: 
+ *        - name: user_id
+ *          in: path
+ *          description: ID del usuario
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna lista de User Programa.
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserProgramaRouter.post('/getprogramcompleto/students/:user_id', userprogramacontroller.getByStudentIdAndOrderByDia);
+
 /**
  * Post track
  * @openapi
@@ -251,7 +279,13 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.g
  */
 UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
+UserProgramaRouter.put('/student/:user_id/:id', userprogramacontroller.updateByStudentAndTecnica);
+
+
 UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
+
+
+UserProgramaRouter.post('/generateActivityStudents', userprogramacontroller.generarEstudiantes);
 
 /**
  * Post track

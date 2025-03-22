@@ -19,6 +19,9 @@ const MaintanceRoutes = Router();
  */
 MaintanceRoutes.get("/range-age", MaintanceController.RangeAge);
 
+
+MaintanceRoutes.get("/range-age2", MaintanceController.RangeAge2);
+
 /**
  * Post track
  * @openapi

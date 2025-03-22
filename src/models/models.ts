@@ -25,6 +25,9 @@ import { StudentsResponses } from "./User/studentsresponses";
 import { Carrera } from "./User/carrera";
 import { Ciclo } from "./User/ciclo";
 import { Monedas } from "./Global/monedas";
+import { ActivityStudents } from "./Program/ActivityStudents";
+import { ActivityStudentTags } from "./Program/ActivityStudentTags";
+import { StudentPrograma } from "./Program/studentprograma";
 
 const models = [
   User,
@@ -52,6 +55,9 @@ const models = [
   StudentsResponses,
   Carrera,
   Ciclo,
-  Monedas
+  Monedas,
+  ActivityStudents,
+  ActivityStudentTags,
+  StudentPrograma,
 ];
 export default models;
