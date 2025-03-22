@@ -19,9 +19,9 @@ class MaintanceController {
   async RangeAge2(_req: any, res: any) {
     try {
       const ageRanges = [
-        { id: 1, rango: "17 - 19" },
-        { id: 2, rango: "20 - 22" },
-        { id: 3, rango: "23 o más" },
+        { id: 1, age_range: "17 - 19" },
+        { id: 2, age_range: "20 - 22" },
+        { id: 3, age_range: "23 o más" },
       ];
   
       res.json({ results: ageRanges });
