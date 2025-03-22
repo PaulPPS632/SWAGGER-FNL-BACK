@@ -337,8 +337,6 @@ class UserProgramaController {
         user?.userestressessions.estres_nivel.nombre ?? "Desconocido";
       const age_range =
         user?.studentresponses.age_range.age_range ?? "Desconocido";
-      const carrera =
-        user?.studentresponses.carrera.carrera ?? "Desconocido";
       const ciclo =
         user?.studentresponses.ciclo.ciclo ?? "Desconocido";
       const gender = user?.studentresponses.gender.gender || "Desconocido";
@@ -355,10 +353,6 @@ class UserProgramaController {
         {
           tipo: "Genero",
           nombre: gender,
-        },
-        {
-          tipo: "Carrera",
-          nombre: carrera,
         },
         {
           tipo: "Ciclo",
