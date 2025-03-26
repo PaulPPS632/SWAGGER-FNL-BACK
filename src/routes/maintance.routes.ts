@@ -22,6 +22,9 @@ MaintanceRoutes.get("/range-age", MaintanceController.RangeAge);
 
 MaintanceRoutes.get("/range-age2", MaintanceController.RangeAge2);
 
+
+MaintanceRoutes.get("/seccion", MaintanceController.Seccion);
+
 /**
  * Post track
  * @openapi

@@ -31,6 +31,32 @@ class MaintanceController {
   }
   
 
+  async Seccion(_req: any, res: any) {
+    try {
+      const seccion = [
+        { id: 1, seccion: "1" },
+        { id: 2, seccion: "2" },
+        { id: 3, seccion: "3" },
+        { id: 4, seccion: "4" },
+        { id: 5, seccion: "5" },
+        { id: 5, seccion: "5" },
+        { id: 6, seccion: "6" },
+        { id: 7, seccion: "7" },
+        { id: 8, seccion: "8" },
+        { id: 9, seccion: "9" },
+        { id: 10, seccion: "10" },
+        { id: 11, seccion: "11" },
+        { id: 12, seccion: "12" },
+        { id: 13, seccion: "13" },
+        { id: 14, seccion: "14" },
+      ];
+  
+      res.json({ results: seccion });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener rango de edades" });
+    }
+  }
+
 
   async Areas(req: any, res:any){
     try{
