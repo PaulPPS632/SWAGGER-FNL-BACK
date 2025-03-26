@@ -3,11 +3,11 @@ import {
   AllowNull,
   BelongsTo,
   Column,
-  CreatedAt,
   DataType,
   ForeignKey,
   Model,
   Table,
+  Default,
 } from "sequelize-typescript";
 import { User } from "./user";
 import { AgeRange } from "./ageRange";
@@ -53,7 +53,13 @@ export class StudentsResponses extends Model {
   @BelongsTo(() => Gender)
   gender!: Gender;
   
+  @Default(0)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  seccion!: number;
 
-  @CreatedAt
+  @AllowNull(true)
+  @Default(DataType.NOW)
+  @Column(DataType.DATE)
   created_at!: Date;
 }
