@@ -38,7 +38,7 @@ class StudentResponseController {
       }
   
       if (!foundSeccion) {
-        return res.status(400).json({ error: "Usuario no pertenece a ninguna sección" });
+        foundSeccion="0"
       }
   
       // Guardar la respuesta en la base de datos con la sección encontrada
