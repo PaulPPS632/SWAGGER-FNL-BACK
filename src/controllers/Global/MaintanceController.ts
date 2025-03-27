@@ -6,6 +6,12 @@ import { ResponsabilityLevel } from "../../models/User/responsabilityLevel";
 import { Sedes } from "../../models/User/sedes";
 import { User } from "../../models/User/user";
 
+import { StudentsResponses } from "../../models/User/studentsresponses";
+import { StudentPrograma } from "../../models/Program/studentprograma";
+import {Op} from "sequelize"
+import { Ciclo } from "../../models/User/ciclo";
+
+
 class MaintanceController {
   async RangeAge(_req: any, res: any) {
     try {
@@ -137,8 +143,99 @@ class MaintanceController {
       res.status(500).json({ error: "Error al obtener géneros" });
     }
   }
-  
+  //Ultimos cambios
+  async CompletedByAge(_req: any, res: any) {
+    try {
+      const completedUsers = await StudentPrograma.findAll({
+        where: {
+          completed_date: { [Op.ne]: null },
+        },
+        attributes: ["user_id"],
+        group: ["user_id"],
+      });
 
+      const userIds = completedUsers.map((user) => user.user_id);
+
+      const results = await StudentsResponses.findAll({
+        where: {
+          user_id: { [Op.in]: userIds },
+        },
+        include: [
+          {
+            model: AgeRange,
+            attributes: ["id", "age_range"],
+          },
+        ],
+      });
+
+      res.json({ results });
+    } catch (error) {
+      console.error("Error al obtener filtros por edad:", error);
+      res.status(500).json({ error: "Error al obtener los datos por edad" });
+    }
+  }
+
+  async CompletedByCiclo(_req: any, res: any) {
+    try {
+      const completedUsers = await StudentPrograma.findAll({
+        where: {
+          completed_date: { [Op.ne]: null },
+        },
+        attributes: ["user_id"],
+        group: ["user_id"],
+      });
+
+      const userIds = completedUsers.map((user) => user.user_id);
+
+      const results = await StudentsResponses.findAll({
+        where: {
+          user_id: { [Op.in]: userIds },
+        },
+        include: [
+          {
+            model: Ciclo,
+            attributes: ["id", "ciclo"],
+          },
+        ],
+      });
+
+      res.json({ results });
+    } catch (error) {
+      console.error("Error al obtener filtros por ciclo:", error);
+      res.status(500).json({ error: "Error al obtener los datos por ciclo" });
+    }
+  }
+
+  async CompletedByGender(_req: any, res: any) {
+    try {
+      const completedUsers = await StudentPrograma.findAll({
+        where: {
+          completed_date: { [Op.ne]: null },
+        },
+        attributes: ["user_id"],
+        group: ["user_id"],
+      });
+
+      const userIds = completedUsers.map((user) => user.user_id);
+
+      const results = await StudentsResponses.findAll({
+        where: {
+          user_id: { [Op.in]: userIds },
+        },
+        include: [
+          {
+            model: Gender,
+            attributes: ["id", "gender"],
+          },
+        ],
+      });
+
+      res.json({ results });
+    } catch (error) {
+      console.error("Error al obtener filtros por género:", error);
+      res.status(500).json({ error: "Error al obtener los datos por género" });
+    }
+  }
 
 }
 export default new MaintanceController();
