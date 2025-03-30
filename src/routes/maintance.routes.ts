@@ -129,5 +129,8 @@ MaintanceRoutes.get("/responsability-level", MaintanceController.Responsability)
  */
 MaintanceRoutes.get("/gender", MaintanceController.Gender);
 
+MaintanceRoutes.get("/completed/age-range", MaintanceController.CompletedByAge);
+MaintanceRoutes.get("/completed/ciclo", MaintanceController.CompletedByCiclo);
+MaintanceRoutes.get("/completed/gender", MaintanceController.CompletedByGender);
 
 export default MaintanceRoutes;
