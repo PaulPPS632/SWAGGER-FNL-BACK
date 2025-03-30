@@ -129,6 +129,7 @@ class UserEstresSessionController{
     
     async promedioEstresEmpresaPorDia(req: any, res: any) {
       const userId = req.userId.userId;
+
       console.log(userId);
       try {
 
