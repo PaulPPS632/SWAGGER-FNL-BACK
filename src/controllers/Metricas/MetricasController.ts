@@ -15,6 +15,7 @@ import moment from "moment-timezone";
 import { StudentPrograma } from "../../models/Program/studentprograma";
 import { StudentsResponses } from "../../models/User/studentsresponses";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+import { AgeRange } from "../../models/User/ageRange";
 
 
 //import moment from "moment";
@@ -766,7 +767,87 @@ class MetricasController {
     }
   }
   
-
+  async AlumnosEdad(req: any, res: any) {
+    try {
+      const empresaId = req.params.empresaId;
+  
+      const result = await UserEstresSession.findAll({
+        attributes: [
+          [
+            Sequelize.literal(`
+              (COUNT(CASE WHEN estres_nivel_id = 1 THEN 1 END) * 1 +
+               COUNT(CASE WHEN estres_nivel_id = 2 THEN 1 END) * 2 +
+               COUNT(CASE WHEN estres_nivel_id = 3 THEN 1 END) * 3) / 
+               NULLIF(COUNT(*), 0)
+            `),
+            'promedio_estres'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 1 THEN 1 ELSE NULL END')),
+            'LEVE'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 2 THEN 1 ELSE NULL END')),
+            'MODERADO'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 3 THEN 1 ELSE NULL END')),
+            'ALTO'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('*')),
+            'total_registros'
+          ],
+          [Sequelize.col('user.studentresponses.age_range.age_range'), 'rango_edad']
+        ],
+        include: [
+          {
+            model: User,
+            attributes: [],
+            required: true,
+            where: { empresa_id: empresaId },
+            include: [
+              {
+                model: StudentsResponses,
+                as: 'studentresponses',
+                attributes: [],
+                include: [
+                  {
+                    model: AgeRange,
+                    as: 'age_range',
+                    attributes: []
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        group: ['user.studentresponses.age_range.id'],
+      });
+  
+      if (!result || result.length === 0) {
+        return res.status(404).json({
+          error: 'No se encontraron registros para la empresa especificada'
+        });
+      }
+  
+      const data = result.map((row: any) => ({
+        promedio_estres: Number(row.get('promedio_estres')).toFixed(2),
+        desglose: {
+          LEVE: row.get('LEVE'),
+          MODERADO: row.get('MODERADO'),
+          ALTO: row.get('ALTO')
+        },
+        total_registros: row.get('total_registros'),
+        rango_edad: row.get('rango_edad')
+      }));
+  
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error("Error en AlumnosEdad:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
 
 }
 

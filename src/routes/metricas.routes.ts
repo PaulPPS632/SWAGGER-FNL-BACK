@@ -45,4 +45,7 @@ MetricasRouter.get("/estrellasdia/:dia/:empresa_id", metricasController.Estrella
 
 MetricasRouter.get("/estrellasdia/student/:dia/:empresa_id", metricasController.EstrellasDiaStudent);
 
+
+MetricasRouter.get("/AlumnosEdad/:empresaId", metricasController.AlumnosEdad);
+
 export default MetricasRouter;

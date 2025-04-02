@@ -1,8 +1,9 @@
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
 import { EstresContador } from "../../models/Clasificacion/estres_contador";
-import { Sequelize } from 'sequelize';
 import { User } from "../../models/User/user";
+import { Sequelize, Op } from 'sequelize';
+
 
 class UserEstresSessionController{
 
@@ -138,24 +139,25 @@ class UserEstresSessionController{
           return res.status(404).json({ error: 'Usuario no encontrado' });
         }
     
-        const empresaId = user.empresa_id;
-    
+        const empresaId = user.empresa_id; // ← esta variable ahora sí será utilizada
+
         const result = await UserEstresSession.findAll({
           attributes: [
             [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 ELSE NULL END`)), 'INFELIZ'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 ELSE NULL END`)), 'FELIZ'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'NEUTRAL']
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 END`)), 'ALTO'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 END`)), 'MODERADO'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 END`)), 'LEVE']
           ],
           include: [{
             model: User,
             attributes: [],
-            where: { empresa_id: empresaId, role_id: 1 },
+            where: { empresa_id: empresaId }, // ← corregido aquí
             required: true
           }],
           group: [Sequelize.fn('DATE', Sequelize.col('created_at'))],
           order: [[Sequelize.fn('DATE', Sequelize.col('created_at')), 'DESC']]
         });
+        
 
         if (!result) {
           return res.status(404).json({ error: 'Niveles de estres no encontrados' });
@@ -178,7 +180,7 @@ class UserEstresSessionController{
         return res.status(500).json({ error: 'Error interno del servidor' });
       }
     }
-
+ 
 
 
     async getTotalEmpleadosPorNivelEstres(req: any, res: any){
@@ -235,7 +237,57 @@ class UserEstresSessionController{
         return res.status(500).json({ error: 'Error interno del servidor' });
       }
     }
+   
+    async cantidadUsuariosPorCaritasEsan(_: any, res: any) {
+      const empresaId = 5; // ESAN
 
+      try {
+        const result = await UserEstresSession.findAll({
+          attributes: [
+            [Sequelize.fn("DATE", Sequelize.col("created_at")), "date"],
+            [Sequelize.fn("COUNT", Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 END`)), "INFELIZ"],
+            [Sequelize.fn("COUNT", Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 END`)), "NEUTRAL"],
+            [Sequelize.fn("COUNT", Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 END`)), "FELIZ"],
+            [Sequelize.fn("COUNT", Sequelize.col("caritas")), "TOTAL"]
+          ],
+          where: {
+            caritas: { [Op.ne]: null } // Ignorar caritas nulas
+          },
+          include: [
+            {
+              model: User,
+              attributes: [],
+              where: { empresa_id: empresaId },
+              required: true
+            }
+          ],
+          group: [Sequelize.fn("DATE", Sequelize.col("created_at"))],
+          order: [[Sequelize.fn("DATE", Sequelize.col("created_at")), "ASC"]]
+        });
+  
+        if (!result.length) {
+          return res.status(404).json({ message: "No hay datos para ESAN." });
+        }
+  
+        const data = result.map((item) => ({
+          date: item.get("date"),
+          total_stress_level: {
+            INFELIZ: Number(item.get("INFELIZ")),
+            NEUTRAL: Number(item.get("NEUTRAL")),
+            FELIZ: Number(item.get("FELIZ"))
+          },
+          total: Number(item.get("TOTAL"))
+        }));
+  
+        return res.status(200).json(data);
+      } catch (error) {
+        console.error("Error al obtener conteo de emociones por día:", error);
+        return res.status(500).json({ message: "Error interno del servidor." });
+      }
+    
+    }
+    
 }
+
 
 export default new UserEstresSessionController();

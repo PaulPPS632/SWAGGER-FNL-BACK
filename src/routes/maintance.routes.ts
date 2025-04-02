@@ -133,4 +133,6 @@ MaintanceRoutes.get("/completed/age-range", MaintanceController.CompletedByAge);
 MaintanceRoutes.get("/completed/ciclo", MaintanceController.CompletedByCiclo);
 MaintanceRoutes.get("/completed/gender", MaintanceController.CompletedByGender);
 
+
+
 export default MaintanceRoutes;
