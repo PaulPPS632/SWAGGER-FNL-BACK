@@ -29,11 +29,23 @@ MetricasRouter.get("/CausasEstres/:areaId/:empresa_id", metricasController.Causa
 MetricasRouter.get("/total_empl_estres/:empresa_id", metricasController.TotalEmplEstres);
 
 MetricasRouter.get("/InteraccionApp/:empresa_id", metricasController.InteraccionApp);
+MetricasRouter.get("/InteraccionApp/students/:empresa_id", metricasController.InteraccionAppStudents);
+MetricasRouter.get("/InteraccionApp2/students/:dia/:empresa_id", metricasController.InteraccionAppStudents2);
+
+MetricasRouter.get("/total_students_compl/students/:empresa_id", metricasController.Total_Students_compl);
+
 
 MetricasRouter.get("/InteraccionApp2/:dia/:empresa_id", metricasController.InteraccionApp2);
+
+MetricasRouter.get("/AlumnosSeccion/:seccion/:empresaId", metricasController.AlumnosSeccion);
 
 MetricasRouter.get("/EstresSegunFuncy/:user_id", metricasController.EstresSegunFuncy);
 
 MetricasRouter.get("/estrellasdia/:dia/:empresa_id", metricasController.EstrellasDia);
+
+MetricasRouter.get("/estrellasdia/student/:dia/:empresa_id", metricasController.EstrellasDiaStudent);
+
+
+MetricasRouter.get("/AlumnosEdad/:empresaId", metricasController.AlumnosEdad);
 
 export default MetricasRouter;

@@ -189,11 +189,15 @@ UserRoutes.post('/actualizarPerfil/:id', upload, UserController.updateProfile);
  */
 UserRoutes.get('/users/empresa', Authorization,UserController.listCompanyUsers);
 
+UserRoutes.get('/users/students', Authorization,UserController.listCompanyStudents);
+
 UserRoutes.get('/users/empresa/estres/sedes', Authorization,UserController.listEstresporSede);
 
 UserRoutes.get('/users/getpermisos/:user_id', UserController.getPermisos);
 
 
 UserRoutes.get('/students/getpermisos/:user_id', UserController.getPermisoStudent);
+
+UserRoutes.get('/user/estudiantes', Authorization, UserController.listStudentDetails);
 
 export default UserRoutes;

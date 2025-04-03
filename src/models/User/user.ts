@@ -10,12 +10,14 @@ import {
   ForeignKey,
   BelongsTo,
   HasOne,
+  HasMany
 } from "sequelize-typescript";
 import { UserEstresSession } from "../Clasificacion/userestressession";
 import { UserResponses } from "./user_responses";
 import { Empresas } from "../Global/empresas";
 import { Role } from "../User/role"; 
 import { StudentsResponses } from "./studentsresponses";
+import { StudentPrograma } from "../Program/studentprograma";
 
 @Table({
   timestamps: false,
@@ -101,5 +103,8 @@ export class User extends Model {
   @Default(false)
   @Column(DataType.BOOLEAN)
   activo!: boolean;
+
+  @HasMany(() => StudentPrograma)
+  studentProgramas!: StudentPrograma[];
 
 }

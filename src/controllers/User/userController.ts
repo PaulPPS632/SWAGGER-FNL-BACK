@@ -185,56 +185,95 @@ class UserController {
 
   async getStudentProfile(req: any, res: any) {
     try {
-      const userProfile = await StudentsResponses.findOne({
-        where: { user_id: req.params.id },
+      const userId = req.params.id;
+
+      // Buscar perfil del estudiante en StudentsResponses
+      let studentProfile = await StudentsResponses.findOne({
+        where: { user_id: userId },
         include: [
-          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id"] },
-          { model: Ciclo, attributes: ["ciclo"] },
-          { model: AgeRange, attributes: ["age_range"] },
-          { model: Gender, attributes: ["gender"] },
-        ],
+          {
+            model: User,
+            attributes: ["username", "email", "profileImage", "empresa_id", "role_id"]
+          },
+          {
+            model: Ciclo,
+            attributes: ["ciclo"]
+          },
+          {
+            model: AgeRange,
+            attributes: ["age_range"]
+          },
+          {
+            model: Gender,
+            attributes: ["gender"]
+          }
+        ]
       });
-  
-      if (!userProfile) {
-        return res.status(404).json({ error: "Usuario no encontrado" });
+
+      if (!studentProfile) {
+        let studentProfile = await User.findOne({
+          where: { id: userId },
+        });
+
+        if (!studentProfile) {
+          return res.status(404).json({ error: "Usuario no encontrado" });
+        }
+
+
+        return res.json({
+          username: studentProfile.username || "Sin nombre",
+          email: studentProfile.email || "Sin email",
+          ciclo: "No especificado",
+          age_range: "No especificado",
+          gender: "No especificado",
+          profileImage: studentProfile.profileImage || null,
+          id_empresa: studentProfile.empresa_id || null,
+          role_id: studentProfile.role_id || null,
+          nivel_estres: "No completó el test",
+          dias_usados: "No Usado",
+          dias_no_usados: "No Usado"
+        });
+
       }
-  
-      // Obtener nivel de estrés si existe
-      let userEstres = await UserEstresSession.findOne({
-        where: { user_id: req.params.id },
+
+      // Obtener el último nivel de estrés registrado
+      const userEstres = await UserEstresSession.findOne({
+        where: { user_id: userId },
         attributes: ["estres_nivel_id"],
+        order: [["created_at", "DESC"]] // por si hay más de uno, toma el más reciente
       });
-  
-      // Obtener las fechas de mensajes enviados por el usuario
+
+      // Fechas en las que el usuario envió mensajes (únicas por día)
       const messageUserDates = await Message.findAll({
-        where: { user_id: req.params.id },
+        where: { user_id: userId },
         attributes: [[Sequelize.fn("DATE", Sequelize.col("created_at")), "unique_date"]],
         group: [Sequelize.fn("DATE", Sequelize.col("created_at"))],
-        order: [[Sequelize.fn("DATE", Sequelize.col("created_at")), "ASC"]],
+        order: [[Sequelize.fn("DATE", Sequelize.col("created_at")), "ASC"]]
       });
-  
-      // Cálculo de días no usados
+
+      // Cálculo de días usados y no usados en el mes actual
       const now = new Date();
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      const dias_usados = messageUserDates.length || 0;
+      const dias_usados = messageUserDates.length;
       const dias_no_usados = endDate.getDate() - dias_usados;
-  
-      // Respuesta JSON con datos seguros
+
+      // Armar respuesta final
       return res.json({
-        username: userProfile.user?.username || "Sin nombre",
-        email: userProfile.user?.email || "Sin email",
-        ciclo: userProfile.ciclo?.ciclo || "No especificado",
-        age_range: userProfile.age_range?.age_range || "No especificado",
-        gender: userProfile.gender?.gender || "No especificado",
-        profileImage: userProfile.user?.profileImage || null,
-        id_empresa: userProfile.user?.empresa_id || null,
-        role_id: userProfile.user?.role_id || null,
+        username: studentProfile.user?.username || "Sin nombre",
+        email: studentProfile.user?.email || "Sin email",
+        ciclo: studentProfile.ciclo?.ciclo || "No especificado",
+        age_range: studentProfile.age_range?.age_range || "No especificado",
+        gender: studentProfile.gender?.gender || "No especificado",
+        profileImage: studentProfile.user?.profileImage || null,
+        id_empresa: studentProfile.user?.empresa_id || null,
+        role_id: studentProfile.user?.role_id || null,
         nivel_estres: userEstres?.estres_nivel_id || "No completó el test",
         dias_usados,
-        dias_no_usados,
+        dias_no_usados
       });
+
     } catch (error) {
-      console.error("Error al obtener el perfil de usuario:", error);
+      console.error("Error al obtener el perfil del estudiante:", error);
       return res.status(500).json({ error: "Error interno del servidor" });
     }
   }
@@ -612,6 +651,92 @@ class UserController {
     }
   }
 
+  async listCompanyStudents(req: any, res: any) {
+    try {
+      const userId = req.userId?.userId;
+      if (!userId) {
+          return res.status(400).json({ message: 'User ID is missing or invalid' });
+      }
+
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const currentUser = await User.findByPk(userId);
+      if (!currentUser) {
+          return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+      
+      // Define base where clause
+      const whereClause = {
+        empresa_id: currentUser.empresa_id,
+        role_id: 4, // Excluir Administradores
+        id: { [Op.notIn]: [1] } // Excluir Fancy
+      };
+
+
+      // Execute count and find in parallel
+      const [totalUsers, users] = await Promise.all([
+        User.count({ where: whereClause }),
+        User.findAll({
+          attributes: ['id', 'username', 'email'],
+          where: whereClause,
+          include: [
+            {
+              model: StudentsResponses,
+              required: false,
+              attributes: ['seccion'],
+              include: [
+                {
+                  model: Ciclo,
+                  attributes: ['ciclo'],
+                  required: false
+                }
+              ]
+            },
+            {
+              model: UserEstresSession,
+              attributes: [
+                [Sequelize.fn('COALESCE', Sequelize.col('estres_nivel_id'), 0), 'estres_nivel_id']
+              ],
+              required: false
+            }
+          ],
+          limit: Number(limit),
+          offset,
+          raw: true,
+          nest: true
+        }).then(users => {
+          // Ordenar los resultados manualmente en caso de que el ORDER de Sequelize no sea suficiente
+          return users.sort((a, b) => (b.userestressessions.estres_nivel_id ?? 0) - (a.userestressessions.estres_nivel_id ?? 0));
+        })
+      ]);
+
+      return res.status(200).json({
+          users: users.map(user => ({
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              ciclo: user.studentresponses?.ciclo?.ciclo || 'Sin asignar',
+              seccion: user.studentresponses?.seccion || 'Sin asignar',
+              estres_nivel: user.userestressessions?.estres_nivel_id || 0,
+          })),
+          pagination: {
+              total: totalUsers,
+              page: Number(page),
+              pages: Math.ceil(totalUsers / Number(limit))
+          },
+      });
+
+    } catch (error: any) {
+        console.error('Error en listCompanyUsers:', error);
+        return res.status(500).json({
+            message: 'Error al obtener los usuarios',
+            error: error.message
+        });
+    }
+  }
+
   async listEstresporSede(req: any, res: any) {
     try {
       const userId = req.userId?.userId;
@@ -760,6 +885,80 @@ class UserController {
       });
     }
   }
+  
+  async listStudentDetails(req: any, res: any) {
+    try {
+      const userId = req.userId?.userId;
+      const currentUser = await User.findByPk(userId);
+  
+      if (!currentUser) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+  
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+  
+      const whereClause = {
+        empresa_id: currentUser.empresa_id,
+        role_id: 4
+      };
+  
+      // Conteo total de estudiantes
+      const totalStudents = await User.count({ where: whereClause });
+  
+      // Obtener estudiantes con include
+      const students = await User.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: StudentsResponses,
+            attributes: ['seccion'],
+            include: [
+              { model: Ciclo, attributes: ['ciclo'], required: false },
+              { model: AgeRange, attributes: ['age_range'], required: false }
+            ],
+            required: false
+          },
+          {
+            model: UserEstresSession,
+            attributes: ['estres_nivel_id', 'created_at'],
+            required: false,
+            order: [['created_at', 'DESC']]
+          }
+        ],
+        limit,
+        offset,
+        raw: true,
+        nest: true
+      });
+  
+      const result = students.map(s => ({
+        id: s.id,
+        username: s.username,
+        email: s.email,
+        age_range: s.studentresponses?.age_range?.age_range || 'Sin asignar',
+        ciclo: s.studentresponses?.ciclo?.ciclo || 'Sin asignar',
+        seccion: s.studentresponses?.seccion || 'Sin asignar',
+        estres_entrada: s.userestressessions?.estres_nivel_id || 'Pendiente',
+        estres_final: 'Pendiente' // Se deja fijo por ahora
+      }));
+  
+      return res.status(200).json({
+        users: result,
+        pagination: {
+          total: totalStudents,
+          page,
+          pages: Math.ceil(totalStudents / limit)
+        }
+      });
+    } catch (error) {
+      console.error("Error en listStudentDetails:", error);
+      return res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+  
+  
 }
 
 export default new UserController();

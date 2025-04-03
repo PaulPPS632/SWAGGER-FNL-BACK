@@ -12,6 +12,11 @@ import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
 import { UserPrograma } from "../../models/Program/userprograma";
 import moment from "moment-timezone";
+import { StudentPrograma } from "../../models/Program/studentprograma";
+import { StudentsResponses } from "../../models/User/studentsresponses";
+import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+import { AgeRange } from "../../models/User/ageRange";
+
 
 //import moment from "moment";
 
@@ -403,6 +408,44 @@ class MetricasController {
   }
 
 
+  async EstrellasDiaStudent(req: any, res: any){
+    try{
+
+      const dia = req.params.dia;
+      const empresa_id = req.params.empresa_id;
+
+      const estrellasCount = await StudentPrograma.findAll({
+        where:{
+          sesion: dia,
+          completed_date: { [Op.ne]: null }
+        },
+        include: {
+          model: User,
+          required: true,
+          where:{
+            empresa_id: empresa_id
+          }
+        }
+      })
+
+      if (!estrellasCount){
+        return res.status(404).json({ message: `Los usuarios de la empresa ${empresa_id} no han completado actividades` });
+      }
+
+      
+      const totalEstrellas = estrellasCount.reduce((sum, item) => sum + (item.estrellas || 0), 0);
+      const promedio = totalEstrellas / estrellasCount.length;
+
+      return res.json({ promedioEstrellas: promedio.toFixed(2) });
+
+
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+
+
   async InteraccionApp(req: any, res: any) {
     try {
       const empresa_id = req.params.empresa_id;
@@ -461,6 +504,153 @@ class MetricasController {
     }
   }
 
+  async InteraccionAppStudents(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+
+      // 1. Obtener los usuarios que pertenecen a la empresa
+      const users = await User.findAll({
+        where: { empresa_id: empresa_id }
+      });
+
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
+      }
+  
+      // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
+      const usuariosCompletaronHoy = await StudentPrograma.findAll({
+        where: {
+          completed_date: { [Op.ne]: null }
+        },
+        include: [
+          {
+            model: User,
+            required: true,
+            where: { empresa_id: empresa_id },
+            attributes: ['username'] 
+          },
+        ],
+        raw: true, // 🔥 Devuelve datos en formato plano
+        nest: true // 🔥 Anida correctamente las relaciones
+      });
+
+
+      const data = usuariosCompletaronHoy.map(item => ({
+          user_id: item.user_id, // ✅ Ahora se puede acceder directamente sin `get()`
+          username: item.user.username
+      }));
+
+      return res.status(200).json({data: data})
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+
+
+  async InteraccionAppStudents2(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+      const dia = req.params.dia;
+
+      // 1. Obtener los usuarios que pertenecen a la empresa
+      const users = await User.findAll({
+        where: { empresa_id: empresa_id }
+      });
+
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
+      }
+  
+      // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
+      const usuariosCompletaronHoy = await StudentPrograma.findAll({
+        where: {
+          sesion: dia,
+          completed_date: { [Op.ne]: null }
+        },
+        include: [
+          {
+            model: User,
+            required: true,
+            where: { empresa_id: empresa_id },
+            attributes: ['username'] 
+          },
+        ],
+        raw: true, // 🔥 Devuelve datos en formato plano
+        nest: true // 🔥 Anida correctamente las relaciones
+      });
+
+
+      const data = usuariosCompletaronHoy.map(item => ({
+          user_id: item.user_id, // ✅ Ahora se puede acceder directamente sin `get()`
+          username: item.user.username
+      }));
+
+      return res.status(200).json({data: data})
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+
+
+  async Total_Students_compl(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+
+
+      // 1. Obtener los usuarios que pertenecen a la empresa
+      const users = await User.findAll({
+        where: { empresa_id: empresa_id, 
+          role_id: {
+            [Op.ne]: 3,
+          } }
+      });
+
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
+      }
+
+      
+      const usuariosCompletaron = await StudentPrograma.findAll({
+        where: {
+          completed_date: {
+            [Op.ne]: null, // Not Null
+          },
+          sesion: {
+            [Op.between]: [1, 21], // Filtrar solo días entre 1 y 21
+          },
+        },
+        attributes: ["user_id"],
+        group: ["user_id"],
+        include: [
+          {
+            model: User,
+            required: true,
+            where: {
+              empresa_id: empresa_id, // Filtrar por empresa
+            },
+          },
+        ],
+        
+      });
+
+
+      const totalUsuariosCompletaronHoy = usuariosCompletaron.length;
+      const totalUsuarios = users.length;
+      const usuariosNoCompletaronHoy = totalUsuarios - totalUsuariosCompletaronHoy;
+
+      return res.status(200).json({
+        totalUsuarios,
+        totalUsuariosCompletaronHoy,
+        usuariosNoCompletaronHoy,
+      });
+
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
 
   async EmojisDia(req: any, res: any){
     try{
@@ -499,6 +689,165 @@ class MetricasController {
     }
   }
 
+
+  async AlumnosSeccion(req: any, res: any){
+    try{  
+      const seccion = req.params.seccion;
+      const empresaId = req.params.empresaId;
+  
+      const result = await UserEstresSession.findAll({
+        attributes: [
+          // Cálculo del promedio de estrés
+          [
+            Sequelize.literal(`
+              (COUNT(CASE WHEN estres_nivel_id = 1 THEN 1 END) * 1 +
+               COUNT(CASE WHEN estres_nivel_id = 2 THEN 1 END) * 2 +
+               COUNT(CASE WHEN estres_nivel_id = 3 THEN 1 END) * 3) / 
+              NULLIF(COUNT(*), 0)
+            `), 
+            'promedio_estres'
+          ],
+          // Contar los registros para cada nivel de estrés
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 1 THEN 1 ELSE NULL END')),
+            'LEVE'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 2 THEN 1 ELSE NULL END')),
+            'MODERADO'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 3 THEN 1 ELSE NULL END')),
+            'ALTO'
+          ],
+          // Contar todos los registros
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('*')),
+            'total_registros'
+          ]
+        ],
+        include: [
+          {
+            model: User,
+            attributes: [],
+            where: { empresa_id: empresaId },
+            required: true,
+            include: [
+              {
+                model: StudentsResponses,
+                attributes: ['seccion'],  // Incluir la 'seccion'
+                where: { seccion: seccion },  // Filtrar por la 'seccion'
+              }
+            ]
+          }
+        ]
+      });
+      
+          
+      if (!result || result.length === 0) {
+                return res.status(404).json({ 
+                  error: 'No se encontraron registros para la fecha especificada' 
+                });
+              }
+          
+      const promedioData = {
+                promedio_estres: Number(result[0].get('promedio_estres')).toFixed(2),
+                desglose: {
+                  LEVE: result[0].get('LEVE'),
+                  MODERADO: result[0].get('MODERADO'),
+                  ALTO: result[0].get('ALTO')
+                },
+                total_registros: result[0].get('total_registros')
+              };
+      return res.status(200).json(promedioData);
+  
+    } catch(error) {
+      console.error("Error en AlumnosSeccion:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+  
+  async AlumnosEdad(req: any, res: any) {
+    try {
+      const empresaId = req.params.empresaId;
+  
+      const result = await UserEstresSession.findAll({
+        attributes: [
+          [
+            Sequelize.literal(`
+              (COUNT(CASE WHEN estres_nivel_id = 1 THEN 1 END) * 1 +
+               COUNT(CASE WHEN estres_nivel_id = 2 THEN 1 END) * 2 +
+               COUNT(CASE WHEN estres_nivel_id = 3 THEN 1 END) * 3) / 
+               NULLIF(COUNT(*), 0)
+            `),
+            'promedio_estres'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 1 THEN 1 ELSE NULL END')),
+            'LEVE'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 2 THEN 1 ELSE NULL END')),
+            'MODERADO'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN estres_nivel_id = 3 THEN 1 ELSE NULL END')),
+            'ALTO'
+          ],
+          [
+            Sequelize.fn('COUNT', Sequelize.literal('*')),
+            'total_registros'
+          ],
+          [Sequelize.col('user.studentresponses.age_range.age_range'), 'rango_edad']
+        ],
+        include: [
+          {
+            model: User,
+            attributes: [],
+            required: true,
+            where: { empresa_id: empresaId },
+            include: [
+              {
+                model: StudentsResponses,
+                as: 'studentresponses',
+                attributes: [],
+                include: [
+                  {
+                    model: AgeRange,
+                    as: 'age_range',
+                    attributes: []
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        group: ['user.studentresponses.age_range.id'],
+      });
+  
+      if (!result || result.length === 0) {
+        return res.status(404).json({
+          error: 'No se encontraron registros para la empresa especificada'
+        });
+      }
+  
+      const data = result.map((row: any) => ({
+        promedio_estres: Number(row.get('promedio_estres')).toFixed(2),
+        desglose: {
+          LEVE: row.get('LEVE'),
+          MODERADO: row.get('MODERADO'),
+          ALTO: row.get('ALTO')
+        },
+        total_registros: row.get('total_registros'),
+        rango_edad: row.get('rango_edad')
+      }));
+  
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error("Error en AlumnosEdad:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
 
 }
 
