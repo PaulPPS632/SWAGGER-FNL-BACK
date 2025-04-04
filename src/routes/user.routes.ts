@@ -200,4 +200,5 @@ UserRoutes.get('/students/getpermisos/:user_id', UserController.getPermisoStuden
 
 UserRoutes.get('/user/estudiantes', Authorization, UserController.listStudentDetails);
 
+
 export default UserRoutes;

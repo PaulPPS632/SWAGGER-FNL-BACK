@@ -916,7 +916,8 @@ class UserController {
             attributes: ['seccion'],
             include: [
               { model: Ciclo, attributes: ['ciclo'], required: false },
-              { model: AgeRange, attributes: ['age_range'], required: false }
+              { model: AgeRange, attributes: ['age_range'], required: false },
+              { model: Gender,attributes:['gender'],required:false}
             ],
             required: false
           },
@@ -937,6 +938,7 @@ class UserController {
         id: s.id,
         username: s.username,
         email: s.email,
+        gender: s.studentresponses?.gender?.gender || 'Sin asignar',
         age_range: s.studentresponses?.age_range?.age_range || 'Sin asignar',
         ciclo: s.studentresponses?.ciclo?.ciclo || 'Sin asignar',
         seccion: s.studentresponses?.seccion || 'Sin asignar',
