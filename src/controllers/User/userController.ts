@@ -977,15 +977,17 @@ class UserController {
       });
 
      const stress = await UserEstresSession.findOne({
-        where: { user_id: id },
+        where: { user_id: id,
+          age_range_id: { [Op.ne]: 4 } // ❌ Excluir age_range_id = 4
+         },
         order: [['created_at', 'ASC']]
       });
-
+      /*
       const finalStress = await UserEstresSession.findOne({
         where: { user_id: id },
         order: [['created_at', 'DESC']]
       });
-
+  */
       return res.status(200).json({
         username: user.username,
         email: user.email,
@@ -996,7 +998,7 @@ class UserController {
         ciclo: student?.ciclo?.ciclo || 'Sin asignar',
         gender: student?.gender?.gender || 'Sin asignar',
         estres_entrada: stress?.estres_nivel_id || 'No completó',
-        estres_final: finalStress?.estres_nivel_id || 'Pendiente',
+        estres_final: 'Pendiente',
         
       });
     } catch (error) {

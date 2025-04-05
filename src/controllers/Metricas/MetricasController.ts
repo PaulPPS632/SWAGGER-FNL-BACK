@@ -770,7 +770,7 @@ class MetricasController {
   async AlumnosEdad(req: any, res: any) {
     try {
       const empresaId = req.params.empresaId;
-  
+
       const result = await UserEstresSession.findAll({
         attributes: [
           [
@@ -805,7 +805,7 @@ class MetricasController {
             model: User,
             attributes: [],
             required: true,
-            where: { empresa_id: empresaId },
+            where: { empresa_id: empresaId, role_id: 4 },
             include: [
               {
                 model: StudentsResponses,
@@ -824,13 +824,13 @@ class MetricasController {
         ],
         group: ['user.studentresponses.age_range.id'],
       });
-  
+
       if (!result || result.length === 0) {
         return res.status(404).json({
           error: 'No se encontraron registros para la empresa especificada'
         });
       }
-  
+
       const data = result.map((row: any) => ({
         promedio_estres: Number(row.get('promedio_estres')).toFixed(2),
         desglose: {
@@ -841,7 +841,7 @@ class MetricasController {
         total_registros: row.get('total_registros'),
         rango_edad: row.get('rango_edad')
       }));
-  
+
       return res.status(200).json(data);
     } catch (error) {
       console.error("Error en AlumnosEdad:", error);
