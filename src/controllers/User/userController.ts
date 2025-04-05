@@ -989,13 +989,15 @@ class UserController {
       return res.status(200).json({
         username: user.username,
         email: user.email,
+        profileImage: user.profileImage || null,
+        id_Empresa: user.empresa_id || null,
         seccion: student?.seccion || 'Sin asignar',
        age_range: student?.age_range?.age_range || 'Sin asignar',
         ciclo: student?.ciclo?.ciclo || 'Sin asignar',
         gender: student?.gender?.gender || 'Sin asignar',
         estres_entrada: stress?.estres_nivel_id || 'No completó',
         estres_final: finalStress?.estres_nivel_id || 'Pendiente',
-
+        
       });
     } catch (error) {
       console.error("Error en getStudentProfileById:", error);
