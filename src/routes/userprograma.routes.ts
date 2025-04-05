@@ -310,4 +310,8 @@ UserProgramaRouter.post('/generateActivityStudents', userprogramacontroller.gene
 UserProgramaRouter.get('/estrellas/:userId', userprogramacontroller.getStars);
 
 UserProgramaRouter.get('/:userId/act/:dia', userprogramacontroller.getActivityCompleted);
+
+//Ultimo cambio
+UserProgramaRouter.get('/student/estrellas/:userId', userprogramacontroller. getStudentStarsById);
+
 export default UserProgramaRouter;

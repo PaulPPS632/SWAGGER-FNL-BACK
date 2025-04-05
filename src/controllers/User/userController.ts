@@ -959,8 +959,50 @@ class UserController {
       return res.status(500).json({ error: "Error interno del servidor" });
     }
   }
-  
-  
+  //Ultimos cambios
+  async getStudentProfileById(req: any, res: any) {
+    const { id } = req.params;
+    try {
+      const user = await User.findOne({ where: { id, role_id: 4 } });
+      if (!user) return res.status(404).json({ error: 'Estudiante no encontrado' });
+
+      const student = await StudentsResponses.findOne({
+        where: { user_id: id },
+        attributes: ['seccion'], 
+       include: [
+          { model: AgeRange, attributes: ['age_range'] },
+          { model: Ciclo, attributes: ['ciclo'] },
+          { model: Gender, attributes: ['gender'] }
+        ]
+      });
+
+     const stress = await UserEstresSession.findOne({
+        where: { user_id: id },
+        order: [['created_at', 'ASC']]
+      });
+
+      const finalStress = await UserEstresSession.findOne({
+        where: { user_id: id },
+        order: [['created_at', 'DESC']]
+      });
+
+      return res.status(200).json({
+        username: user.username,
+        email: user.email,
+        seccion: student?.seccion || 'Sin asignar',
+       age_range: student?.age_range?.age_range || 'Sin asignar',
+        ciclo: student?.ciclo?.ciclo || 'Sin asignar',
+        gender: student?.gender?.gender || 'Sin asignar',
+        estres_entrada: stress?.estres_nivel_id || 'No completó',
+        estres_final: finalStress?.estres_nivel_id || 'Pendiente',
+
+      });
+    } catch (error) {
+      console.error("Error en getStudentProfileById:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+
 }
 
 export default new UserController();
