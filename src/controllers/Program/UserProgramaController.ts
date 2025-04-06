@@ -882,5 +882,36 @@ class UserProgramaController {
       res.status(500).json({ message: 'Error interno del servidor' });
     }
   };
+  //Ultimos cambios
+  async getStudentStarsById(req: any, res: any) {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    try {
+      const { count, rows } = await StudentPrograma.findAndCountAll({
+        where: {
+          user_id: userId,
+          completed_date: { [Op.ne]: null },
+        },
+        attributes: ["completed_date", "estrellas"],
+        order: [["completed_date", "DESC"]],
+        offset,
+        limit,
+      });
+
+      return res.status(200).json({
+        total: count,
+        page,
+        limit,
+        data: rows,
+      });
+    } catch (error) {
+      console.error("Error al obtener estrellas del estudiante:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+
 }
 export default UserProgramaController;

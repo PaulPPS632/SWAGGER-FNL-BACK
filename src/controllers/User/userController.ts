@@ -916,7 +916,8 @@ class UserController {
             attributes: ['seccion'],
             include: [
               { model: Ciclo, attributes: ['ciclo'], required: false },
-              { model: AgeRange, attributes: ['age_range'], required: false }
+              { model: AgeRange, attributes: ['age_range'], required: false },
+              { model: Gender,attributes:['gender'],required:false}
             ],
             required: false
           },
@@ -937,6 +938,7 @@ class UserController {
         id: s.id,
         username: s.username,
         email: s.email,
+        gender: s.studentresponses?.gender?.gender || 'Sin asignar',
         age_range: s.studentresponses?.age_range?.age_range || 'Sin asignar',
         ciclo: s.studentresponses?.ciclo?.ciclo || 'Sin asignar',
         seccion: s.studentresponses?.seccion || 'Sin asignar',
@@ -957,8 +959,49 @@ class UserController {
       return res.status(500).json({ error: "Error interno del servidor" });
     }
   }
-  
-  
+  //Ultimos cambios
+  async getStudentProfileById(req: any, res: any) {
+    const { id } = req.params;
+  try {
+    const user = await User.findOne({ where: { id, role_id: 4 } });
+    if (!user) return res.status(404).json({ error: 'Estudiante no encontrado' });
+
+    const student = await StudentsResponses.findOne({
+      where: {
+        user_id: id,
+        age_range_id: { [Op.ne]: 4 } // ❌ Excluir age_range_id = 4
+      },
+      attributes: ['seccion'],
+      include: [
+        { model: AgeRange, attributes: ['age_range'] },
+        { model: Ciclo, attributes: ['ciclo'] },
+        { model: Gender, attributes: ['gender'] }
+      ]
+    });
+
+    const stress = await UserEstresSession.findOne({
+      where: { user_id: id },
+      order: [['created_at', 'ASC']]
+    });
+
+    return res.status(200).json({
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage || null,
+      id_Empresa: user.empresa_id || null,
+      seccion: student?.seccion || 'Sin asignar',
+      age_range: student?.age_range?.age_range || 'Sin asignar',
+      ciclo: student?.ciclo?.ciclo || 'Sin asignar',
+      gender: student?.gender?.gender || 'Sin asignar',
+      estres_entrada: stress?.estres_nivel_id || 'No completó',
+      estres_final: 'Pendiente',
+    });
+  } catch (error) {
+    console.error("Error en getStudentProfileById:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+  }
+
 }
 
 export default new UserController();
