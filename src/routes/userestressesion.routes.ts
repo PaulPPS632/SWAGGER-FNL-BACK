@@ -103,7 +103,11 @@ UserEstresSesionRoutes.get(
     "/userestresessions/empresa/esan/caritas",
     UserEstresSessionController.cantidadUsuariosPorCaritasEsan
   );
-  
+
+UserEstresSesionRoutes.get(
+  '/userestresessions/:user_id/caritas',
+  UserEstresSessionController.getCaritasPorUsuario
+);
   
 
 export default UserEstresSesionRoutes;

@@ -286,7 +286,34 @@ class UserEstresSessionController{
       }
     
     }
-    
+    async getCaritasPorUsuario(req: any, res: any) {
+  const userId = req.params.user_id;
+
+  try {
+    const sesiones = await UserEstresSession.findAll({
+      where: {
+        user_id: userId,
+        caritas: { [Op.ne]: null }
+      },
+      attributes: [
+        [Sequelize.fn('DATE', Sequelize.col('created_at')), 'fecha'],
+        'caritas'
+      ],
+      order: [['created_at', 'ASC']]
+    });
+
+    const data = sesiones.map(sesion => ({
+      fecha: sesion.get('fecha'),
+      carita: sesion.get('caritas')
+    }));
+
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Error al obtener las caritas del usuario:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
 }
 
 
