@@ -886,6 +886,123 @@ class UserController {
       });
     }
   }
+  
+  async listStudentDetails(req: any, res: any) {
+    try {
+      const userId = req.userId?.userId;
+      const currentUser = await User.findByPk(userId);
+  
+      if (!currentUser) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+  
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+  
+      const whereClause = {
+        empresa_id: currentUser.empresa_id,
+        role_id: 4
+      };
+  
+      // Conteo total de estudiantes
+      const totalStudents = await User.count({ where: whereClause });
+  
+      // Obtener estudiantes con include
+      const students = await User.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: StudentsResponses,
+            attributes: ['seccion'],
+            include: [
+              { model: Ciclo, attributes: ['ciclo'], required: false },
+              { model: AgeRange, attributes: ['age_range'], required: false },
+              { model: Gender,attributes:['gender'],required:false}
+            ],
+            required: false
+          },
+          {
+            model: UserEstresSession,
+            attributes: ['estres_nivel_id', 'created_at'],
+            required: false,
+            order: [['created_at', 'DESC']]
+          }
+        ],
+        limit,
+        offset,
+        raw: true,
+        nest: true
+      });
+  
+      const result = students.map(s => ({
+        id: s.id,
+        username: s.username,
+        email: s.email,
+        gender: s.studentresponses?.gender?.gender || 'Sin asignar',
+        age_range: s.studentresponses?.age_range?.age_range || 'Sin asignar',
+        ciclo: s.studentresponses?.ciclo?.ciclo || 'Sin asignar',
+        seccion: s.studentresponses?.seccion || 'Sin asignar',
+        estres_entrada: s.userestressessions?.estres_nivel_id || 'Pendiente',
+        estres_final: 'Pendiente' // Se deja fijo por ahora
+      }));
+  
+      return res.status(200).json({
+        users: result,
+        pagination: {
+          total: totalStudents,
+          page,
+          pages: Math.ceil(totalStudents / limit)
+        }
+      });
+    } catch (error) {
+      console.error("Error en listStudentDetails:", error);
+      return res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+  //Ultimos cambios
+  async getStudentProfileById(req: any, res: any) {
+    const { id } = req.params;
+  try {
+    const user = await User.findOne({ where: { id, role_id: 4 } });
+    if (!user) return res.status(404).json({ error: 'Estudiante no encontrado' });
+
+    const student = await StudentsResponses.findOne({
+      where: {
+        user_id: id,
+        age_range_id: { [Op.ne]: 4 } // ❌ Excluir age_range_id = 4
+      },
+      attributes: ['seccion'],
+      include: [
+        { model: AgeRange, attributes: ['age_range'] },
+        { model: Ciclo, attributes: ['ciclo'] },
+        { model: Gender, attributes: ['gender'] }
+      ]
+    });
+
+    const stress = await UserEstresSession.findOne({
+      where: { user_id: id },
+      order: [['created_at', 'ASC']]
+    });
+
+    return res.status(200).json({
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage || null,
+      id_Empresa: user.empresa_id || null,
+      seccion: student?.seccion || 'Sin asignar',
+      age_range: student?.age_range?.age_range || 'Sin asignar',
+      ciclo: student?.ciclo?.ciclo || 'Sin asignar',
+      gender: student?.gender?.gender || 'Sin asignar',
+      estres_entrada: stress?.estres_nivel_id || 'No completó',
+      estres_final: 'Pendiente',
+    });
+  } catch (error) {
+    console.error("Error en getStudentProfileById:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+  }
+
 }
 
 export default new UserController();

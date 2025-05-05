@@ -198,4 +198,10 @@ UserRoutes.get('/users/getpermisos/:user_id', UserController.getPermisos);
 
 UserRoutes.get('/students/getpermisos/:user_id', UserController.getPermisoStudent);
 
+UserRoutes.get('/user/estudiantes', Authorization, UserController.listStudentDetails);
+
+//Ultimos cambios
+UserRoutes.get('/perfilStudentV1/:id', UserController.getStudentProfileById);
+
+
 export default UserRoutes;

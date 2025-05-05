@@ -99,4 +99,15 @@ UserEstresSesionRoutes.get('/userestresessions/empresa', Authorization,UserEstre
 
 UserEstresSesionRoutes.get('/userestresessions/empresa/totalestres', Authorization,UserEstresSessionController.getTotalEmpleadosPorNivelEstres);
 
+UserEstresSesionRoutes.get(
+    "/userestresessions/empresa/esan/caritas",
+    UserEstresSessionController.cantidadUsuariosPorCaritasEsan
+  );
+
+UserEstresSesionRoutes.get(
+  '/userestresessions/:user_id/caritas',
+  UserEstresSessionController.getCaritasPorUsuario
+);
+  
+
 export default UserEstresSesionRoutes;
