@@ -69,6 +69,11 @@ export class User extends Model {
   @Column(DataType.BOOLEAN)
   testestresbool!: boolean;
 
+  @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  testacademicobool!: boolean;
+
   @AllowNull(true)
   @Default(DataType.NOW)
   @Column(DataType.DATE)

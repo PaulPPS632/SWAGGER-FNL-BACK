@@ -22,6 +22,7 @@ import EmocionesDiariasRoutes from "./routes/emocionesDiarias.routes";
 import SpeechTextRoutes from "./routes/speechtext.routes";
 import carreraRoutes from "./routes/carrera.routes";
 import cicloRoutes from "./routes/ciclo.routes";
+import TestAcademicoRoutes from "./routes/test_academico.routes";
 // @ts-ignore
 import PredictionRoutes from "./routes/prediction.routes";
 // @ts-ignore
@@ -76,7 +77,7 @@ class App {
     this.server.use("/api", PredictionRoutes);
     this.server.use("/api/randomforest", RfRoutes);
     this.server.use("/api/", StudentResponseRoutes);
-
+    this.server.use("/api/", TestAcademicoRoutes);
   }
 
   public getServer(): Application {
