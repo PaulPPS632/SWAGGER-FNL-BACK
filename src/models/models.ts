@@ -28,6 +28,9 @@ import { Monedas } from "./Global/monedas";
 import { ActivityStudents } from "./Program/ActivityStudents";
 import { ActivityStudentTags } from "./Program/ActivityStudentTags";
 import { StudentPrograma } from "./Program/studentprograma";
+import { TestEstresEstudiantes } from "./Test/test_estres_estudiantes";
+import { AcademicoResponses } from "./Test/academico_responses";
+import { TestAcademico } from "./Test/test_academico";
 
 const models = [
   User,
@@ -59,5 +62,8 @@ const models = [
   ActivityStudents,
   ActivityStudentTags,
   StudentPrograma,
+  TestEstresEstudiantes,
+  AcademicoResponses,
+  TestAcademico
 ];
 export default models;

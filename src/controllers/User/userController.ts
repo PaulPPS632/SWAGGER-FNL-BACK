@@ -62,6 +62,7 @@ class UserController {
         permisopoliticas: user.permisopoliticas,
         studentresponsebool: user.studentresponsebool,
         testestresbool: user.testestresbool,
+        testacademicobool: user.testacademicobool,
         id_empresa: user.empresa_id,
         nombre_empresa: user.empresa.nombre,
         activo: user.activo
