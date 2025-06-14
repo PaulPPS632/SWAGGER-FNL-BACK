@@ -75,7 +75,7 @@ class UserController {
   
 
   async createUser(req: any, res: any) {
-    const { username, password, email, empresa_id, role_id } = req.body;
+    const { username, password, nombres, apellidos, email, empresa_id, role_id } = req.body;
     const file = req.file;
 
     const activo = true;
@@ -111,8 +111,10 @@ class UserController {
       const user = await User.create({
         username,
         password: hashedPassword,
+        nombres,
+        apellidos,
         email,
-        profileImage: profileImagePath,
+        profileImage: profileImagePath, 
         created_at: new Date(),
         empresa_id,
         role_id,

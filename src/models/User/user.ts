@@ -34,6 +34,15 @@ export class User extends Model {
   @Column(DataType.STRING)
   password!: string;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  nombres!: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  apellidos!: string;
+
+
   @AllowNull(false)
   @IsEmail
   @Unique(true)
