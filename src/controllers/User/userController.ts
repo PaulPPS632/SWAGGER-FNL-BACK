@@ -75,7 +75,7 @@ class UserController {
   
 
   async createUser(req: any, res: any) {
-    const { username, password, email, empresa_id, role_id } = req.body;
+    const { username, password, nombres, apellidos, email, empresa_id, role_id } = req.body;
     const file = req.file;
 
     const activo = true;
@@ -111,8 +111,10 @@ class UserController {
       const user = await User.create({
         username,
         password: hashedPassword,
+        nombres,
+        apellidos,
         email,
-        profileImage: profileImagePath,
+        profileImage: profileImagePath, 
         created_at: new Date(),
         empresa_id,
         role_id,
@@ -133,7 +135,7 @@ class UserController {
       const userProfile = await UserResponses.findOne({
         where: { user_id: req.params.id },
         include: [
-          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id"] },
+          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id", "nombres", "apellidos"] },
           { model: Hierarchical_level, attributes: ["level"] },
           { model: AgeRange, attributes: ["age_range"] },
           { model: Gender, attributes: ["gender"] },
@@ -166,7 +168,9 @@ class UserController {
   
       // Respuesta JSON con datos seguros
       return res.json({
-        username: userProfile.user?.username || "Sin nombre",
+        username: userProfile.user?.username || "Sin username",
+        nombres: userProfile.user?.nombres || null,
+        apellidos: userProfile.user?.apellidos || null, 
         email: userProfile.user?.email || "Sin email",
         hierarchicalLevel: userProfile.hierarchical_level?.level || "No especificado",
         age_range: userProfile.age_range?.age_range || "No especificado",
@@ -963,45 +967,54 @@ class UserController {
   //Ultimos cambios
   async getStudentProfileById(req: any, res: any) {
     const { id } = req.params;
-  try {
-    const user = await User.findOne({ where: { id, role_id: 4 } });
-    if (!user) return res.status(404).json({ error: 'Estudiante no encontrado' });
+    try {
 
-    const student = await StudentsResponses.findOne({
-      where: {
-        user_id: id,
-        age_range_id: { [Op.ne]: 4 } // ❌ Excluir age_range_id = 4
-      },
-      attributes: ['seccion'],
-      include: [
-        { model: AgeRange, attributes: ['age_range'] },
-        { model: Ciclo, attributes: ['ciclo'] },
-        { model: Gender, attributes: ['gender'] }
-      ]
-    });
-
-    const stress = await UserEstresSession.findOne({
-      where: { user_id: id },
-      order: [['created_at', 'ASC']]
-    });
-
-    return res.status(200).json({
-      username: user.username,
-      email: user.email,
-      profileImage: user.profileImage || null,
-      id_Empresa: user.empresa_id || null,
-      seccion: student?.seccion || 'Sin asignar',
-      age_range: student?.age_range?.age_range || 'Sin asignar',
-      ciclo: student?.ciclo?.ciclo || 'Sin asignar',
-      gender: student?.gender?.gender || 'Sin asignar',
-      estres_entrada: stress?.estres_nivel_id || 'No completó',
-      estres_final: 'Pendiente',
-    });
-  } catch (error) {
-    console.error("Error en getStudentProfileById:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+      const user = await User.findOne({ where: { id } });
+      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+  
+      const student = await StudentsResponses.findOne({
+        where: {
+          user_id: id,
+          age_range_id: { [Op.ne]: 4 }
+        },
+        attributes: ['seccion'],
+        include: [
+          { model: AgeRange, attributes: ['age_range'] },
+          { model: Ciclo, attributes: ['ciclo'] },
+          { model: Gender, attributes: ['gender'] }
+        ]
+      });
+  
+      const stress = await UserEstresSession.findOne({
+        where: { user_id: id },
+        order: [['created_at', 'ASC']]
+      });
+  
+      const displayName = (user.nombres && user.apellidos)
+        ? `${user.nombres} ${user.apellidos}`
+        : user.username || 'Usuario';
+  
+      return res.status(200).json({
+        username: user.username,
+        nombres: user.nombres || null,
+        apellidos: user.apellidos || null,
+        displayName,
+        email: user.email,
+        profileImage: user.profileImage || null,
+        id_Empresa: user.empresa_id || null,
+        seccion: student?.seccion || 'Sin asignar',
+        age_range: student?.age_range?.age_range || 'Sin asignar',
+        ciclo: student?.ciclo?.ciclo || 'Sin asignar',
+        gender: student?.gender?.gender || 'Sin asignar',
+        estres_entrada: stress?.estres_nivel_id || 'No completó',
+        estres_final: 'Pendiente',
+      });
+    } catch (error) {
+      console.error("Error en getStudentProfileById:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
   }
-  }
+  
 
 }
 
