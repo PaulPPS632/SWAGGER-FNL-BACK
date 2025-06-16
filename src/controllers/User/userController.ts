@@ -135,7 +135,7 @@ class UserController {
       const userProfile = await UserResponses.findOne({
         where: { user_id: req.params.id },
         include: [
-          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id"] },
+          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id", "nombres", "apellidos"] },
           { model: Hierarchical_level, attributes: ["level"] },
           { model: AgeRange, attributes: ["age_range"] },
           { model: Gender, attributes: ["gender"] },
@@ -168,7 +168,9 @@ class UserController {
   
       // Respuesta JSON con datos seguros
       return res.json({
-        username: userProfile.user?.username || "Sin nombre",
+        username: userProfile.user?.username || "Sin username",
+        nombres: userProfile.user?.nombres || null,
+        apellidos: userProfile.user?.apellidos || null, 
         email: userProfile.user?.email || "Sin email",
         hierarchicalLevel: userProfile.hierarchical_level?.level || "No especificado",
         age_range: userProfile.age_range?.age_range || "No especificado",
@@ -966,14 +968,14 @@ class UserController {
   async getStudentProfileById(req: any, res: any) {
     const { id } = req.params;
     try {
-      // 🔁 Cambiado: se eliminó el filtro `role_id: 4`
+
       const user = await User.findOne({ where: { id } });
       if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
   
       const student = await StudentsResponses.findOne({
         where: {
           user_id: id,
-          age_range_id: { [Op.ne]: 4 } // ❌ Excluir age_range_id = 4
+          age_range_id: { [Op.ne]: 4 }
         },
         attributes: ['seccion'],
         include: [
