@@ -26,6 +26,10 @@ export class UserEstresSession extends Model {
   @Column(DataType.INTEGER)
   estres_nivel_id!: number;
 
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  estres_salida_nivel_id!: number
+
   @BelongsTo(() => EstresNiveles)
   estres_nivel!: EstresNiveles; 
 

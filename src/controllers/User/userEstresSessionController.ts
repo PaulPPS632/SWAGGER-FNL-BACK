@@ -90,6 +90,68 @@ class UserEstresSessionController{
     }
     }
 
+    async assignEstresNivel2(req: any, res: any){
+        const { user_id, estres_nivel_id } = req.body;
+        try {
+
+
+            // Busca si ya existe una sesión de estrés para el usuario
+            const existingSession = await UserEstresSession.findOne({ where: { user_id } });
+
+
+            const estresNivel = await EstresNiveles.findOne({
+                where: { id: estres_nivel_id }
+            });
+
+            if (!estresNivel) {
+                console.log('No se encontró el registro con el id proporcionado.');
+                res.status(500).json({ message: 'Error del servidor.' });
+                return
+              }
+              
+            const userResp = await User.findOne({
+              where:{ id: user_id},
+              attributes: ["empresa_id"]
+            })
+
+            if (!userResp) {
+              console.log('No se encontró la empresa del userid proporcionado.');
+              res.status(500).json({ message: 'Error del servidor.' });
+              return
+            }
+
+            const estresContador = await EstresContador.findOne({
+              where: {estres_nivel_id: estres_nivel_id, empresa_id: userResp.empresa_id}
+            })
+
+
+            if (estresContador){
+
+              const nuevaCantidad = estresContador.cantidad ? estresContador.cantidad + 1 : 1;
+              await estresContador.update({ cantidad: nuevaCantidad });
+            }else {
+              await EstresContador.create({cantidad: 1, estres_nivel_id: estres_nivel_id, empresa_id: userResp.empresa_id});
+            }
+            
+            
+            if (existingSession) {
+                // Si la sesión ya existe, actualiza el estres_nivel_id
+                existingSession.estres_salida_nivel_id = estres_nivel_id;
+                await existingSession.save();
+                return res.status(200).json({ message: 'Nivel de estrés actualizado correctamente.' });
+            } else {
+                // Si no existe, crea una nueva sesión
+                const newSession = await UserEstresSession.create({ 
+                  user_id, 
+                  estres_salida_nivel_id: estres_nivel_id 
+                });
+                return res.status(200).json({ message: 'Nivel de estrés asignado correctamente.', data: newSession });
+            }
+        } catch (error) {
+            console.error('Error al asignar el nivel de estrés:', error);
+            res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
     async graficaEstresLevel(req: any, res: any) {
       const userId = req.params.userId;
       try {

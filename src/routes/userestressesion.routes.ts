@@ -56,6 +56,8 @@ UserEstresSesionRoutes.get('/userestresessions/:user_id/nivel', UserEstresSessio
  */
 UserEstresSesionRoutes.post('/userestresessions/assign', UserEstresSessionController.assignEstresNivel);
 
+UserEstresSesionRoutes.post('/userestresessions/assign2', UserEstresSessionController.assignEstresNivel2);
+
 /**
  * Post track
  * @openapi
