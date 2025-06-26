@@ -849,6 +849,85 @@ class MetricasController {
     }
   }
 
+  async EstresSalidaGeneral(req:any, res:any){
+    
+    try{
+      const empresaId = req.params.empresaId;
+
+      const result = await UserEstresSession.findOne({
+        attributes: [
+          [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_salida_nivel_id = 3 THEN 1 END`)), 'ALTO'],
+          [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_salida_nivel_id = 2 THEN 1 END`)), 'MODERADO'],
+          [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_salida_nivel_id = 1 THEN 1 END`)), 'LEVE']
+        ],
+        include: [{
+          model: User,
+          attributes: [],
+          where: { empresa_id: empresaId },
+          required: true
+        }],
+        raw: true // Agregar `raw: true` para que no devuelva un array de resultados con instancias de Sequelize, sino solo los datos
+      });
+
+      if (!result) {
+            return res.status(404).json({ error: 'No hay niveles de estres de salida para esta empresa' });
+      }
+
+      return res.status(200).json(result);
+      } catch (error) {
+        console.error('Error al obtener el estrés de salida de la empresa:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    
+  }
+
+  
+  async EstresSalidaUsuario(req: any, res: any) {
+    try {
+      const userId = req.params.userId;
+
+      const result: any = await UserEstresSession.findOne({
+        attributes: [
+          [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_salida_nivel_id = 3 THEN 1 END`)), 'ALTO'],
+          [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_salida_nivel_id = 2 THEN 1 END`)), 'MODERADO'],
+          [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_salida_nivel_id = 1 THEN 1 END`)), 'LEVE']
+        ],
+        include: [{
+          model: User,
+          attributes: [],
+          where: { id: userId },
+          required: true
+        }],
+        raw: true // Esto le dice a Sequelize que devuelva un objeto plano
+      });
+
+      if (!result) {
+        return res.status(404).json({ error: 'No hay niveles de estrés para este usuario' });
+      }
+
+      // Ahora TypeScript permite acceder a ALTO, MODERADO, LEVE directamente
+      const { ALTO, MODERADO, LEVE } = result;
+
+      let nivelEstres = 'Leve'; 
+      
+      if (ALTO > 0) {
+        nivelEstres = 'Alto';
+      } else if (MODERADO > 0) {
+        nivelEstres = 'Moderado';
+      }else if (LEVE > 0) {
+        nivelEstres = 'Leve';
+      }
+
+      return res.status(200).json({
+        nivel_estres: nivelEstres
+      });
+
+    } catch (error) {
+      console.error('Error al obtener el estrés de salida del usuario:', error);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
 }
 
 
