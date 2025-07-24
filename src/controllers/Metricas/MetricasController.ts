@@ -908,7 +908,7 @@ class MetricasController {
       // Ahora TypeScript permite acceder a ALTO, MODERADO, LEVE directamente
       const { ALTO, MODERADO, LEVE } = result;
 
-      let nivelEstres = 'Leve'; 
+      let nivelEstres = 'No tiene estres de salida'; 
       
       if (ALTO > 0) {
         nivelEstres = 'Alto';
